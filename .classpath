@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src/main/java"/>
+	<classpathentry kind="src" path="src/main/resources"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="lib/mason/bsh-2.0b4.jar"/>
+	<classpathentry kind="lib" path="lib/mason/itext-1.2.3.jar"/>
+	<classpathentry kind="lib" path="lib/mason/j3dcore.jar"/>
+	<classpathentry kind="lib" path="lib/mason/j3dutils.jar"/>
+	<classpathentry kind="lib" path="lib/mason/jcommon-1.0.21.jar"/>
+	<classpathentry kind="lib" path="lib/mason/jfreechart-1.0.17.jar"/>
+	<classpathentry kind="lib" path="lib/mason/jmf-2.1.1e.jar"/>
+	<classpathentry kind="lib" path="lib/mason/jogl-all-2.3.2.jar"/>
+	<classpathentry kind="lib" path="lib/mason/jogl-all-2.3.2-natives-android-aarch64.jar"/>
+	<classpathentry kind="lib" path="lib/mason/jogl-all-2.3.2-natives-android-armv6.jar"/>
+	<classpathentry kind="lib" path="lib/mason/jogl-all-2.3.2-natives-linux-amd64.jar"/>
+	<classpathentry kind="lib" path="lib/mason/jogl-all-2.3.2-natives-linux-armv6.jar"/>
+	<classpathentry kind="lib" path="lib/mason/jogl-all-2.3.2-natives-linux-armv6hf.jar"/>
+	<classpathentry kind="lib" path="lib/mason/jogl-all-2.3.2-natives-linux-i586.jar"/>
+	<classpathentry kind="lib" path="lib/mason/jogl-all-2.3.2-natives-macosx-universal.jar"/>
+	<classpathentry kind="lib" path="lib/mason/jogl-all-2.3.2-natives-solaris-amd64.jar"/>
+	<classpathentry kind="lib" path="lib/mason/jogl-all-2.3.2-natives-solaris-i586.jar"/>
+	<classpathentry kind="lib" path="lib/mason/jogl-all-2.3.2-natives-windows-amd64.jar"/>
+	<classpathentry kind="lib" path="lib/mason/jogl-all-2.3.2-natives-windows-i586.jar"/>
+	<classpathentry kind="lib" path="lib/mason/mason.20.jar"/>
+	<classpathentry kind="lib" path="lib/mason/portfolio.jar"/>
+	<classpathentry kind="lib" path="lib/mason/vecmath-1.3.1.jar"/>
+	<classpathentry kind="lib" path="lib/mason/xml-apis-1.3.04.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
