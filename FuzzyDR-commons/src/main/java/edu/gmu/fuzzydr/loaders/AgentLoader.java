@@ -5,6 +5,7 @@ import java.io.IOException;
 import edu.gmu.fuzzydr.collectives.Agent;
 import edu.gmu.fuzzydr.controller.Config;
 import edu.gmu.fuzzydr.controller.FuzzyDRController;
+import sim.util.Double2D;
 
 public class AgentLoader {
 
@@ -21,6 +22,7 @@ public class AgentLoader {
 			
 			// add agent to the master map of active agents, indexed by ID to allow removal if agent dies.
 			FuzzyDRController.masterMap_ActiveAgents.put(a.getAgentID(), a);
+			
 		}
 	}
 	

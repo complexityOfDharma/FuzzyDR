@@ -21,19 +21,25 @@ public class Resource implements Steppable{
 	
 
 	@Override
-	public void step(SimState arg0) {
+	public void step(SimState state) {
 		
-		// Resource is replenished by a regrowth rule. Resources are decremented from the Agent class in their Step method.
-		regrowth();
+		FuzzyDRController fuzzyDR = (FuzzyDRController) state;
+		
+		// Resource is replenished by a logistic regrowth rule. Resources are decremented from the Agent class in their Step method.
+		regrowth(state);
 		
 		DEBUG: System.out.println("Harvest completed and regrowth. Remaining resources are: " + this.getResourceLevel() + "\n");
 	}
 	
-	public void regrowth() {
+	public void regrowth(SimState state) {
+		
+		FuzzyDRController fuzzyDR = (FuzzyDRController) state;
 		
 		// Compute the regrowth amount.
-		double _growth = (Config.commonsRegrowthRate * FuzzyDRController.commons.getResourceLevel()) * 
-				(1 - (FuzzyDRController.commons.getResourceLevel() / Config.resourceCarryingCapacity));
+		//double _growth = (Config.commonsRegrowthRate * FuzzyDRController.commons.getResourceLevel()) * 
+		//		(1 - (FuzzyDRController.commons.getResourceLevel() / Config.resourceCarryingCapacity));
+		double _growth = (Config.commonsRegrowthRate * this.getResourceLevel()) * 
+				(1 - (this.getResourceLevel() / Config.resourceCarryingCapacity));
 		
 		// Update the commons resource levels with the new growth.
 		this.setResourceLevel(this.getResourceLevel() + _growth);

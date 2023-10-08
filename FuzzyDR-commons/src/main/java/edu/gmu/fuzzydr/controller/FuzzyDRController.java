@@ -16,6 +16,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jfree.data.xy.XYSeries;
+
 import edu.gmu.fuzzydr.collectives.Agent;
 import edu.gmu.fuzzydr.collectives.Resource;
 import edu.gmu.fuzzydr.constitutional.ADICO;
@@ -23,35 +25,54 @@ import edu.gmu.fuzzydr.loaders.AgentLoader;
 import sim.engine.SimState;
 import sim.engine.Steppable;
 import sim.engine.Stoppable;
+import sim.field.continuous.Continuous2D;
 import sim.field.network.Edge;
 import sim.field.network.Network;
+import sim.util.Double2D;
 
 public class FuzzyDRController extends SimState{
 
 	private static final long serialVersionUID = 1L;
 	public static int UID = 0;
 	
+	public Continuous2D world = new Continuous2D(1.0, Config.WIDTH, Config.HEIGHT);
+	public Network network = new Network(false);
+	
 	public static ArrayList<Agent> masterList_Agents = new ArrayList<Agent>();
     public static HashMap<Integer, Agent> masterMap_ActiveAgents = new HashMap<Integer, Agent>();
 	
 	//public static ArrayList<Resource> masterList_Resources = new ArrayList<Resource>();
-	public static Resource commons;
+	//public static Resource commons;
+	public Resource commons;
 	
 	// TODO: might need a dynamic list of ADICOs... list? Map?
-	public static ADICO adico_1;  // TODO: move this to Agent class? maybe have each agent own an ADICO, and it get updated after fuzzyDR
+	//public static ADICO adico_1;  // TODO: move this to Agent class? maybe have each agent own an ADICO, and it get updated after fuzzyDR
+	public ADICO adico_1;  // TODO: move this to Agent class? maybe have each agent own an ADICO, and it get updated after fuzzyDR
 	
-    //public static int agentPopulation = 1;
+    // *** now being defined in Config... can delete
+	//public static int agentPopulation = 1;
     //public static int agentInitialEnergy = 10;
-    
     //public static int resourceCarryingCapacity = 10;
     
     public int countExpired = 0;    // agents who have expired due to no remaining energy, initialized to no deaths.
+    
+    public XYSeries resourcePoolLevels;
+    
 	
 	 /** Default constructor. */
-    public FuzzyDRController() { super(0); };
+    public FuzzyDRController() { 
+    	super(Config.RANDOM_SEED); 
+    };
 	
+    /**
+     * Constructor.
+     * @param seed
+     * @throws IOException
+     */
     public FuzzyDRController(long seed) throws IOException {
     	super(seed);
+    	
+    	resourcePoolLevels = new XYSeries("Resource Pool Levels");
     	
     	System.out.println("\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
     	System.out.println("FuzzyDR-commons: AGENT-BASED INSTITUTIONAL MODELING AND FUZZY DEONTIC REASONING");
@@ -65,13 +86,14 @@ public class FuzzyDRController extends SimState{
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
         
     	initialize();
-    	
-    	
-
+    
     }
     
     
     private void initialize() throws IOException {
+    	
+    	// clear out world.
+    	world.clear();
     	
     	// clear out any necessary collections.
     	masterList_Agents.clear();
@@ -86,11 +108,19 @@ public class FuzzyDRController extends SimState{
     	// instantiate the global resource and add it to the schedule.
     	instantiateResource();
     	
-    	// any other global initializations (e.g., ADICO rule assignments)
+    	// any other global initializations (e.g., ADICO rule assignments).
     	instantiateInstitutions();
     	
-    	//TODO: do small world network connections
+    	// connect all agents via small world network.
+    	// TODO: should some agent personas have less than a standard number of initial connections? e.g., some more social, others more private.
+    	buildSmallWorldNetwork(masterList_Agents, Config.initNeighbors, Config.rewiringProb);
     	
+    	// DEBUG for checking small world networks
+    	/*
+    	for (Agent a : masterList_Agents) {
+    		System.out.println("  Network build complete: agent " + a.getAgentID() + ": neighbors list size of " + a.neighbors.size());
+    	}
+    	*/
     	
     	
     }
@@ -100,7 +130,33 @@ public class FuzzyDRController extends SimState{
     	AgentLoader aL = new AgentLoader();
     	aL.loadAgents();
     	
-    	// TODO: loop through agents and assign their initial starting state?
+    	// TODO: loop through agents and assign their initial starting state? (add it to the loop below)... personas, etc.
+    	
+    	// Update the agent specifics.
+    	for (Agent a : masterList_Agents) {
+    		
+    		//give the agent a random location in the world.
+    		Double2D location = new Double2D(
+    				world.getWidth() * Config.RANDOM_GENERATOR.nextDouble(), 
+					world.getHeight() * Config.RANDOM_GENERATOR.nextDouble());
+    				//world.getWidth() * 0.5 + Config.RANDOM_GENERATOR.nextDouble() - 0.5, 
+					//world.getHeight() * 0.5 + Config.RANDOM_GENERATOR.nextDouble() - 0.5);
+			
+			world.setObjectLocation(a, location);
+			
+			System.out.println("Agent " + a.getAgentID() + " location in world is: " + location.toString());
+			
+			// TODO: do this more deliberately
+	    	// set up default agreement to 50%
+	    	a.setAgreement(Config.RANDOM_GENERATOR.nextDouble() * 0.5);
+	    	
+	    	System.out.println();
+	    	System.out.println("Agent " + a.getAgentID() + " initial agreement level: " + a.getAgreement());
+	    	
+	    	// TODO: set up persona and based on that, assign default agreement.
+    	}
+    	
+    	
     	
 		System.out.println("... agent instantiation complete: " + masterList_Agents.size() + " agent(s).");
     	
@@ -126,37 +182,66 @@ public class FuzzyDRController extends SimState{
     	
     }
     
-    private void smallWorldNetworkConnect() throws IOException {
-    	
-    	//TODO: !!! NOTE --- this looks like it won't reference Agent collections, and thus not meaningfully link the agents.
-    	
-    	Network network = new Network(false);  // 'false' for undirected network
-    	
+    /**
+     * Small world network buidling via Watts-Strogatz. Starting with creating a regular ring lattice where each node is connected to its k nearest neighbors.
+     * Rewiring each edge with a probability p, which involves replacing it with a new edge that connects the node to a randomly chosen node.
+     * @param agents
+     * @param initialNeighbors
+     * @param rewireProbability
+     * @throws IOException
+     */
+    public void buildSmallWorldNetwork(List<Agent> agents, int initialNeighbors, double rewireProbability) throws IOException {
+        
     	//TODO: !!! If we remove an agent from the simulation, what are implications to the network and must that be updated/cleared too.
     	
-    	// create the network
-    	for (int i = 0; i < Config.agentPopulation; i++) {
-    		for (int j = i + 1; j < i + Config.avgNumNeighbors / 2; j++) {
-    			int neighbor = j % Config.agentPopulation;
-    			network.addEdge(i, neighbor, network);
-    		}
-    	}
+    	int numAgents = agents.size();
     	
-    	// rewire the network
-    	// TODO: should this be pulled out as a separate method so we can rewire during the run and make the network connections adaptive
+        // Start with a ring lattice where each agent is connected to its initialNeighbors nearest neighbors
+        for (int i = 0; i < numAgents; i++) {
+            Agent current = agents.get(i);
+            for (int j = 1; j <= initialNeighbors / 2; j++) {
+                Agent neighbor1 = agents.get((i + j) % numAgents);
+                Agent neighbor2 = agents.get((i - j + numAgents) % numAgents);
+                current.neighbors.add(neighbor1);
+                current.neighbors.add(neighbor2);
+            }
+        }
+
+        // Rewire the network with the given probability
+        // TODO: should this be pulled out as a separate method so we can rewire during the run and make the network connections adaptive
     	// TODO: is there a way to link rewiring probability to agent's current state, and preferred links to similar agents? Maybe loop over only agents with same archetype characteristics.
-    	
-    	for (int i = 0; i < Config.agentPopulation; i++) {
-    		for (Object edgeObj : network.getEdgesOut(i)) {
-    			Edge edge = (Edge) edgeObj;
-    			if (random.nextDouble() < Config.rewiringProb) {
-    				int newNeighbor = random.nextInt(Config.agentPopulation);
-    				network.addEdge(i, newNeighbor, network);
-    				network.removeEdge(edge);
-    			}
-    		}
-    	}
+        for (int i = 0; i < numAgents; i++) {
+            Agent current = agents.get(i);
+            
+            for (int j = 1; j <= initialNeighbors / 2; j++) {
+                if (random.nextDouble() < rewireProbability) {
+                    int newNeighborIndex = random.nextInt(numAgents);
+                    Agent newNeighbor = agents.get(newNeighborIndex);
+                    
+                    // Ensure the new neighbor isn't the current agent and isn't already a neighbor
+                    while (newNeighbor == current || current.neighbors.contains(newNeighbor)) {
+                        newNeighborIndex = random.nextInt(numAgents);
+                        newNeighbor = agents.get(newNeighborIndex);
+                    }
+                   
+                    // Replace the old neighbor with the new one
+                    Agent oldNeighbor = agents.get((i + j) % numAgents);
+                    current.neighbors.remove(oldNeighbor);
+                    current.neighbors.add(newNeighbor);
+                }
+            }
+        }
+        
+        // add the agent neighbors to the Network object to track links for the visualization.
+        for (Agent agent1 : agents) {
+            for (Agent agent2 : agent1.neighbors) {
+                if (!network.getEdgesOut(agent1).contains(agent2)) {
+                    network.addEdge(agent1, agent2, null);
+                }
+            }
+        }
     }
+
     
     
     @SuppressWarnings("serial")
@@ -222,8 +307,13 @@ public class FuzzyDRController extends SimState{
 					*/
 			///--}
 				
-				// system print statements for overall model statistics
+				// TODO: implement a logging file trigger here to output all statistics.
 				
+				
+				// update plot data for during runtime.
+				resourcePoolLevels.add(schedule.getSteps(), commons.resourceLevel);
+				
+				// system print statements for overall model statistics
 				int expired = Config.agentPopulation - masterMap_ActiveAgents.size();
 				//DEBUG: System.out.println("countExpired = " + countExpired);
 				DEBUG: System.out.println("End of time step " + schedule.getSteps() + ": countExpired = " + expired + "\n");

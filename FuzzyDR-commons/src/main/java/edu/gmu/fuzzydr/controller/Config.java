@@ -20,7 +20,7 @@ public class Config {
     public final static double commonsRegrowthRate = 0.1;
     
     // w.r.t. small world network parameters
-    public final static int avgNumNeighbors = 10;
-    public final static double rewiringProb = 0.1;
+    public final static int initNeighbors = 4;
+    public final static double rewiringProb = 0.8;
     
 }
