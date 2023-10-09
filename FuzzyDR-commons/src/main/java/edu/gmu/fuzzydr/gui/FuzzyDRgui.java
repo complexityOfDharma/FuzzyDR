@@ -2,6 +2,7 @@ package edu.gmu.fuzzydr.gui;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Shape;
 import java.awt.geom.Line2D;
 
 import javax.swing.JFrame;
@@ -33,6 +34,7 @@ import sim.portrayal.simple.OvalPortrayal2D;
 import sim.util.gui.ColorMap;
 import sim.util.gui.SimpleColorMap;
 import sim.util.gui.Utilities;
+import sim.util.media.chart.HistogramGenerator;
 import sim.util.media.chart.TimeSeriesChartGenerator;
 import sim.portrayal.simple.RectanglePortrayal2D;
 
@@ -47,6 +49,7 @@ public class FuzzyDRgui extends GUIState {
     private NetworkPortrayal2D networkPortrayal = new NetworkPortrayal2D();
     
     public TimeSeriesChartGenerator resourcePoolChart;
+    public HistogramGenerator agreementHistogram;
     
     // called by GUI main.
     public FuzzyDRgui() throws IOException {
@@ -87,9 +90,20 @@ public class FuzzyDRgui extends GUIState {
 		resourcePoolChart.setTitle("Resource Pool Level");
 		resourcePoolChart.setYAxisLabel("Remaining Resources");
 		resourcePoolChart.setXAxisLabel("Step");
+		resourcePoolChart.setVisible(true);
 		
-		JFrame frame = resourcePoolChart.createFrame();
-		c.registerFrame(frame);
+		JFrame pool_frame = resourcePoolChart.createFrame();
+		c.registerFrame(pool_frame);
+		
+		// agreement histogram.
+		agreementHistogram = new HistogramGenerator();
+		agreementHistogram.setTitle("Agent Agreement Levels");
+		agreementHistogram.setXAxisLabel("Agreement");
+		agreementHistogram.setYAxisLabel("Frequency");
+		agreementHistogram.setVisible(true);
+		
+		JFrame agreement_frame = agreementHistogram.createFrame();
+		c.registerFrame(agreement_frame);
 		
 	}
     
@@ -98,22 +112,26 @@ public class FuzzyDRgui extends GUIState {
      */
     public void start() {
 		super.start();
-		setupPortrayals();
+		setupPortrayals(fuzzyDRController);
 		
 		System.out.println("\nStarting simulation visualization...\n");
 		
+		// reset resource pool chart.
 		resourcePoolChart.removeAllSeries();
 		resourcePoolChart.addSeries(((FuzzyDRController)state).resourcePoolLevels, null);
+		
+		
+		
 		
 		//TODO: if XYSeries objects for plots, do clear them here.
 	}
 	
 	public void load(SimState state) {
 		super.load(state);
-		setupPortrayals();
+		setupPortrayals(state);
 	}
 	
-    private void setupPortrayals() {
+    private void setupPortrayals(SimState state) {
     	
     	FuzzyDRController fuzzyDR = (FuzzyDRController) state;
     	
@@ -128,51 +146,27 @@ public class FuzzyDRgui extends GUIState {
 					public void draw(Object object, Graphics2D graphics, DrawInfo2D info) {
 						Agent agent = (Agent) object;
 						
-						Color currentColor = graphics.getColor();
-						
-						//System.out.println("drawing... agent " + agent.getAgentID() + " has an agreement level of: " + agent.getAgreement());
-						
-						// TODO: this dynamic color change is not working for some reason...
-						if (agent.getAgreement() >= 0.5) {
-							graphics.setColor(Color.GREEN);
+						if (agent.getAgreement() > 0.3) {
+							// toward agree with institution.
+							paint = Color.BLUE;
+			                scale = 10;
+							
 						} else {
-							graphics.setColor(Color.RED);
+							// toward disagree with institution.
+							paint = Color.MAGENTA;
+			                scale = 10;
+							
 						}
-						
-						// Explicitly draw the oval
-		                int x = (int)info.draw.x;
-		                int y = (int)info.draw.y;
-		                int w = (int)info.draw.width;
-		                int h = (int)info.draw.height;
-		                graphics.fillOval(x, y, w, h);
-
-		                // Reset color back to original
-		                graphics.setColor(currentColor);
 						
 						super.draw(object, graphics, info);
 					}
 				}
     	);
     	
-    	
         // network portrayal.
     	networkPortrayal.setField(new SpatialNetwork2D(fuzzyDR.world, fuzzyDR.network));
         networkPortrayal.setPortrayalForAll(new SimpleEdgePortrayal2D());
 
-
-        /*
-    	SimpleEdgePortrayal2D edgePortrayal = new SimpleEdgePortrayal2D();
-        edgePortrayal.setShape(new Line2D.Double(-1,-1,1,1));
-        edgePortrayal.setPaint(Color.GRAY);
-        networkPortrayal.setPortrayalForAll(edgePortrayal);
-
-        // set up the portrayal for the agents
-        OvalPortrayal2D agentPortrayal = new OvalPortrayal2D();
-        agentPortrayal.setFilled(true);
-        agentPortrayal.setPaint(Color.BLUE);
-        networkPortrayal.setPortrayalForAll(agentPortrayal);
-        */
-    	
 		display.reset();
 	    display.setBackdrop(Color.WHITE);
 	    display.repaint();
@@ -208,4 +202,5 @@ public class FuzzyDRgui extends GUIState {
 		display.attach(networkPortrayal, "Network");
     }
     */
+    
 }

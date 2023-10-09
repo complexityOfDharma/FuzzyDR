@@ -26,6 +26,9 @@ public class Agent implements Steppable { //, Stoppable {
 	private double energy;
 	private double agreement;
 	
+	private double locX;
+	private double locY;
+	
 	private double energyConsumption = Config.agentEnergyLossPerStep;       // Energy units lost per time step. Customization by Agent type/ENUM possible in Config. 
 	
 	public List<Agent> neighbors = new ArrayList<>();
@@ -232,6 +235,22 @@ public class Agent implements Steppable { //, Stoppable {
 	
 	public int getAgentID() { 
 		return this.agentID; 
+	}
+
+	public double getLocX() {
+		return locX;
+	}
+
+	public void setLocX(double locX) {
+		this.locX = locX;
+	}
+
+	public double getLocY() {
+		return locY;
+	}
+
+	public void setLocY(double locY) {
+		this.locY = locY;
 	}
 
 	public double getEnergy() {

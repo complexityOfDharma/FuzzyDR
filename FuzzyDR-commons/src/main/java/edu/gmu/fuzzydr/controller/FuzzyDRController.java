@@ -135,10 +135,18 @@ public class FuzzyDRController extends SimState{
     	// Update the agent specifics.
     	for (Agent a : masterList_Agents) {
     		
+    		double locX = world.getWidth() * Config.RANDOM_GENERATOR.nextDouble();
+    		double locY = world.getHeight() * Config.RANDOM_GENERATOR.nextDouble();
+    		
+    		a.setLocX(locX);
+    		a.setLocY(locY);
+    		
     		//give the agent a random location in the world.
     		Double2D location = new Double2D(
-    				world.getWidth() * Config.RANDOM_GENERATOR.nextDouble(), 
-					world.getHeight() * Config.RANDOM_GENERATOR.nextDouble());
+    				a.getLocX(),
+    				a.getLocY());
+    				//world.getWidth() * Config.RANDOM_GENERATOR.nextDouble(), 
+					//world.getHeight() * Config.RANDOM_GENERATOR.nextDouble());
     				//world.getWidth() * 0.5 + Config.RANDOM_GENERATOR.nextDouble() - 0.5, 
 					//world.getHeight() * 0.5 + Config.RANDOM_GENERATOR.nextDouble() - 0.5);
 			
@@ -147,7 +155,7 @@ public class FuzzyDRController extends SimState{
 			System.out.println("Agent " + a.getAgentID() + " location in world is: " + location.toString());
 			
 			// TODO: do this more deliberately
-	    	// set up default agreement to 50%
+	    	// set up default agreement.
 	    	a.setAgreement(Config.RANDOM_GENERATOR.nextDouble() * 0.5);
 	    	
 	    	System.out.println();
@@ -241,8 +249,6 @@ public class FuzzyDRController extends SimState{
             }
         }
     }
-
-    
     
     @SuppressWarnings("serial")
 	public void start() {
@@ -338,7 +344,6 @@ public class FuzzyDRController extends SimState{
 		// TODO: generate the final output file of results.
 	}
 	
-    
 	/**
 	 * Simulation main.
 	 * @param args
