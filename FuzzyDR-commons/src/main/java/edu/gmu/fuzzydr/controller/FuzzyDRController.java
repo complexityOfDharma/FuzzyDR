@@ -152,14 +152,14 @@ public class FuzzyDRController extends SimState{
 			
 			world.setObjectLocation(a, location);
 			
-			System.out.println("Agent " + a.getAgentID() + " location in world is: " + location.toString());
+			//DEBUG: System.out.println("Agent " + a.getAgentID() + " location in world is: " + location.toString());
 			
 			// TODO: do this more deliberately
 	    	// set up default agreement.
-	    	a.setAgreement(Config.RANDOM_GENERATOR.nextDouble() * 0.5);
+	    	//a.setAgreement(Config.RANDOM_GENERATOR.nextDouble() * 0.5);
 	    	
-	    	System.out.println();
-	    	System.out.println("Agent " + a.getAgentID() + " initial agreement level: " + a.getAgreement());
+	    	//DEBUG: System.out.println();
+	    	//DEBUG: System.out.println("Agent " + a.getAgentID() + " initial agreement level: " + a.getAgreement());
 	    	
 	    	// TODO: set up persona and based on that, assign default agreement.
     	}

@@ -6,6 +6,8 @@ import java.awt.Shape;
 import java.awt.geom.Line2D;
 
 import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
+
 import java.io.IOException;
 
 import edu.gmu.fuzzydr.collectives.Agent;
@@ -17,6 +19,7 @@ import sim.display.Display2D;
 import sim.display.GUIState;
 import sim.display.Manipulating2D;
 import sim.engine.SimState;
+import sim.engine.Steppable;
 import sim.portrayal.DrawInfo2D;
 import sim.portrayal.Inspector;
 import sim.portrayal.LocationWrapper;
@@ -120,7 +123,12 @@ public class FuzzyDRgui extends GUIState {
 		resourcePoolChart.removeAllSeries();
 		resourcePoolChart.addSeries(((FuzzyDRController)state).resourcePoolLevels, null);
 		
-		
+		// Schedule the histogram update to be executed in the GUI thread
+	    scheduleRepeatingImmediatelyAfter(new Steppable() {
+	        public void step(SimState state) {
+	            updateAgreementHistogram(fuzzyDRController);
+	        }
+	    });
 		
 		
 		//TODO: if XYSeries objects for plots, do clear them here.
@@ -182,6 +190,28 @@ public class FuzzyDRgui extends GUIState {
     	display = null;
     }
     
+    
+    public void updateAgreementHistogram(SimState state) {
+    	
+    	FuzzyDRController fuzzyDR = (FuzzyDRController) state;
+    	
+        // Ensure you’re running on the GUI thread if this method alters GUI components
+        if(SwingUtilities.isEventDispatchThread()) {
+            // Gather agreement levels
+            double[] agreementLevels = new double[fuzzyDR.masterList_Agents.size()];
+            for(int i = 0; i < fuzzyDR.masterList_Agents.size(); i++) {
+                agreementLevels[i] = fuzzyDR.masterList_Agents.get(i).getAgreement();
+            }
+            
+            // clear out histogram before updating.
+            agreementHistogram.removeAllSeries();
+            // Add data to histogram.
+            agreementHistogram.addSeries(agreementLevels, 10, "Agreement Levels", null);
+        } else {
+            SwingUtilities.invokeLater(() -> updateAgreementHistogram(state));
+        }
+    }
+
     
     public static void main(String[] args) throws IOException {
     	FuzzyDRgui simViz = new FuzzyDRgui();

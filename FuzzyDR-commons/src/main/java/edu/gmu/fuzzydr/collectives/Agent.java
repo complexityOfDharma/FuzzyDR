@@ -48,6 +48,9 @@ public class Agent implements Steppable { //, Stoppable {
 		//this.energy = Config.agentInitialEnergy;
 		this.energy = Config.agentInitialEnergy * Config.RANDOM_GENERATOR.nextDouble();
 		
+		// default agreement.
+		// TODO: make this more deliberate based on persona or other data about the agent.
+		this.setAgreement(Config.RANDOM_GENERATOR.nextDouble());
 	}
 
 	@Override
@@ -88,6 +91,7 @@ public class Agent implements Steppable { //, Stoppable {
 				
 			}
 		}
+		
 	}
 	
 	public double harvest(double resourceLevel, double energyLevel, double harvestTarget) {
