@@ -200,7 +200,7 @@ public class FuzzyDRgui extends GUIState {
             // Gather agreement levels
             double[] agreementLevels = new double[fuzzyDR.masterMap_ActiveAgents.size()];
             
-            DEBUG: System.out.println("... HISTOGRAM: agreement levels array of size: " + agreementLevels.length);
+            //DEBUG: System.out.println("... HISTOGRAM: agreement levels array of size: " + agreementLevels.length);
             
             double avgAgreement;
             double sumAgreement = 0;
@@ -218,8 +218,7 @@ public class FuzzyDRgui extends GUIState {
             
             avgAgreement = sumAgreement / fuzzyDR.masterMap_ActiveAgents.size();
             
-            DEBUG: System.out.println("... ... average agreement is: " + avgAgreement);
-            
+            //DEBUG: System.out.println("... ... average agreement is: " + avgAgreement);
             
             
             // clear out histogram before updating.
