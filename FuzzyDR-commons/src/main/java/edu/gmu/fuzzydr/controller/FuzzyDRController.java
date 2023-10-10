@@ -135,22 +135,18 @@ public class FuzzyDRController extends SimState{
     	// Update the agent specifics.
     	for (Agent a : masterList_Agents) {
     		
+    		//give the agent a random location in the world.
     		double locX = world.getWidth() * Config.RANDOM_GENERATOR.nextDouble();
     		double locY = world.getHeight() * Config.RANDOM_GENERATOR.nextDouble();
     		
     		a.setLocX(locX);
     		a.setLocY(locY);
     		
-    		//give the agent a random location in the world.
     		Double2D location = new Double2D(
     				a.getLocX(),
     				a.getLocY());
-    				//world.getWidth() * Config.RANDOM_GENERATOR.nextDouble(), 
-					//world.getHeight() * Config.RANDOM_GENERATOR.nextDouble());
-    				//world.getWidth() * 0.5 + Config.RANDOM_GENERATOR.nextDouble() - 0.5, 
-					//world.getHeight() * 0.5 + Config.RANDOM_GENERATOR.nextDouble() - 0.5);
-			
-			world.setObjectLocation(a, location);
+    		
+    		world.setObjectLocation(a, location);
 			
 			//DEBUG: System.out.println("Agent " + a.getAgentID() + " location in world is: " + location.toString());
 			

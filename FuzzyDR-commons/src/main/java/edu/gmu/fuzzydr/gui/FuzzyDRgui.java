@@ -198,10 +198,29 @@ public class FuzzyDRgui extends GUIState {
         // Ensure you’re running on the GUI thread if this method alters GUI components
         if(SwingUtilities.isEventDispatchThread()) {
             // Gather agreement levels
-            double[] agreementLevels = new double[fuzzyDR.masterList_Agents.size()];
-            for(int i = 0; i < fuzzyDR.masterList_Agents.size(); i++) {
-                agreementLevels[i] = fuzzyDR.masterList_Agents.get(i).getAgreement();
+            double[] agreementLevels = new double[fuzzyDR.masterMap_ActiveAgents.size()];
+            
+            DEBUG: System.out.println("... HISTOGRAM: agreement levels array of size: " + agreementLevels.length);
+            
+            double avgAgreement;
+            double sumAgreement = 0;
+            int i = 0;
+            
+            //for(int i = 0; i < fuzzyDR.masterMap_ActiveAgents.size(); i++) {
+            for (Agent a : fuzzyDR.masterMap_ActiveAgents.values()) {
+            	//double value = fuzzyDR.masterMap_ActiveAgents.get(i).getAgreement();
+            	double value = a.getAgreement();
+                agreementLevels[i] = value;
+                i++;
+                
+                sumAgreement += value;
             }
+            
+            avgAgreement = sumAgreement / fuzzyDR.masterMap_ActiveAgents.size();
+            
+            DEBUG: System.out.println("... ... average agreement is: " + avgAgreement);
+            
+            
             
             // clear out histogram before updating.
             agreementHistogram.removeAllSeries();
