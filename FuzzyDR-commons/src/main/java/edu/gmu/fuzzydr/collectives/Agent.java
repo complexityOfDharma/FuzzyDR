@@ -64,8 +64,10 @@ public class Agent implements Steppable { //, Stoppable {
 		// if possible, conduct a harvest.
 		//harvest(this.energy, FuzzyDRController.adico_1.getI_quantity());
 		double _resourceLevel = fuzzyDR.commons.getResourceLevel();
-		double _target = fuzzyDR.adico_1.getI_quantity();  // the amount to harvest via the ADICO policy
 		double _remaining;   // the amount remaining in the common pool after agent's harvest.
+		
+		// recall the one ADICO institution at play for this model.
+		double _target = fuzzyDR.adico_1.getI_quantity();  // the amount to harvest via the ADICO policy
 		
 		//harvest(this.energy, fuzzyDR.adico_1.getI_quantity());
 		_remaining = harvest(_resourceLevel, this.energy, _target);
