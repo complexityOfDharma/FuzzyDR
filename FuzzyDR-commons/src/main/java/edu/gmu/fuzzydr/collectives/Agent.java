@@ -1,7 +1,12 @@
 package edu.gmu.fuzzydr.collectives;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import net.sourceforge.jFuzzyLogic.FIS;
+import net.sourceforge.jFuzzyLogic.FunctionBlock;
+import net.sourceforge.jFuzzyLogic.rule.Variable;
 
 import edu.gmu.fuzzydr.controller.Config;
 import edu.gmu.fuzzydr.controller.FuzzyDRController;
@@ -25,6 +30,8 @@ public class Agent implements Steppable { //, Stoppable {
 	private int agentID;
 	private double energy;
 	private double agreement;
+	
+	FIS fis;
 	
 	private double locX;
 	private double locY;
@@ -51,6 +58,15 @@ public class Agent implements Steppable { //, Stoppable {
 		// default agreement.
 		// TODO: make this more deliberate based on persona or other data about the agent.
 		this.setAgreement(Config.RANDOM_GENERATOR.nextDouble());
+		
+		// default fuzzy logic
+		InputStream fclFileInputStream = getClass().getResourceAsStream(Config.genericAgentFCLPath);
+		fis = FIS.load(fclFileInputStream, true); // Path to your FCL file, and 2nd argument indicates to print errors or not.
+
+		if (fis == null) {
+	        System.err.println("Can't load the FCL file!");
+	        return;
+	    }
 	}
 
 	@Override
@@ -79,6 +95,9 @@ public class Agent implements Steppable { //, Stoppable {
 		
 		//DEBUG: System.out.println("Agent: " + getAgentID() + ", energy level is: " + getEnergy());
 		
+		// add to log file. In generateLogEntry(), it will enter a "0" if this is the last Step before removal from system and could be in negative energy state.
+		FuzzyDRController.logEntries.add(this.generateLogEntry(state));
+					
 		// STOPPING CONDITION:
 		// Given energy update at start of step and accounting for any possible harvest afterward, determine if agent should be removed.
 		if (this.getEnergy() <= 0) {
@@ -222,6 +241,19 @@ public class Agent implements Steppable { //, Stoppable {
 		//DEBUG: System.out.println("Agent " + this.agentID + " has been cleaned up and removed from the simulation. Remaining active agents are: " + FuzzyDRController.masterMap_ActiveAgents.size());
 	}
 
+	public String generateLogEntry(SimState state) {
+		FuzzyDRController fuzzyDR = (FuzzyDRController) state;
+		
+		double e;
+		if (energy < 0) {
+			e = 0;
+		} else {
+			e = energy;
+		}
+		
+        return fuzzyDR.schedule.getSteps() + "," + agentID + "," + e + "," + agreement;
+    }
+	
 	public void removeAgentEdges(Agent agent, Network network) {
 	    Bag edges = network.getEdgesOut(agent);
 	    for(int i = 0; i < edges.numObjs; i++) {

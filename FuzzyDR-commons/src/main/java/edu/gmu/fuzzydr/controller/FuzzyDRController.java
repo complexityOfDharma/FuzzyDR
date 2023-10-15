@@ -58,6 +58,9 @@ public class FuzzyDRController extends SimState{
     
     public XYSeries resourcePoolLevels;
     
+    private SimulationLogger logger;
+    public static List<String> logEntries = new ArrayList<>();
+    
 	
 	 /** Default constructor. */
     public FuzzyDRController() { 
@@ -122,6 +125,8 @@ public class FuzzyDRController extends SimState{
     	}
     	*/
     	
+    	// setup the Logger.
+    	this.logger = new SimulationLogger("src/main/resources/simulation_log.csv");
     	
     }
     
@@ -326,6 +331,9 @@ public class FuzzyDRController extends SimState{
 					System.out.println("");
 					System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
                     System.out.println("Simulation terminated... " + expired + " of " + masterList_Agents.size() + " agents have expired and were removed from the simulation after " + (int) schedule.getTime() + " time steps.");
+                    
+                    logger.logEntries(logEntries);
+                    
                     state.kill();
 				}
 			}

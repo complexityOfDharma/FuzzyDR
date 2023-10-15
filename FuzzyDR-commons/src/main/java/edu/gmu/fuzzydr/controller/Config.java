@@ -23,4 +23,7 @@ public class Config {
     public final static int initNeighbors = 4;
     public final static double rewiringProb = 0.8;
     
+    // fuzzy logic files.
+    public static final String genericAgentFCLPath = "/generic_agent.fcl";   // specified with leading '/' for path absolute relative to the classpath root.
+    
 }

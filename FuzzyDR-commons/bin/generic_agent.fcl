@@ -10,20 +10,20 @@ VAR_OUTPUT
 END_VAR
 
 FUZZIFY selfEnergy
-    TERM low: TRAPE 0 0 3 5;
-    TERM ok: TRAPE 3 5 7 9;
-    TERM great: TRAPE 7 9 10 10;
+    TERM low := (0, 1) (3, 1) (5, 0);
+    TERM ok := (3, 0) (5, 1) (7, 0);
+    TERM great := (5, 0) (7, 1) (10, 1);
 END_FUZZIFY
 
 FUZZIFY neighborEnergy
-    TERM low: TRAPE 0 0 3 5;
-    TERM ok: TRAPE 3 5 7 9;
-    TERM great: TRAPE 7 9 10 10;
+    TERM low := (0, 0) (3, 1) (5, 0);
+    TERM ok := (3, 0) (5, 1) (7, 0);
+    TERM great := (7, 0) (9, 1) (10, 1);
 END_FUZZIFY
 
 DEFUZZIFY agreement
-    TERM strongly_agree: TRAPE 0 0 0.5 0.7;
-    TERM oppose: TRAPE 0.3 0.5 1 1;
+    TERM strongly_agree := (0, 0) (0.5, 1) (0.7, 0);
+    TERM oppose := (0.3, 0) (0.5, 1) (1, 1);
     METHOD: COG; // Center of Gravity
 END_DEFUZZIFY
 
