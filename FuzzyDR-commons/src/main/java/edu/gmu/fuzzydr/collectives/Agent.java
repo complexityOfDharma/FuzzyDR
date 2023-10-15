@@ -6,9 +6,13 @@ import java.util.List;
 
 import net.sourceforge.jFuzzyLogic.FIS;
 import net.sourceforge.jFuzzyLogic.FunctionBlock;
+import net.sourceforge.jFuzzyLogic.membership.MembershipFunctionPieceWiseLinear;
+import net.sourceforge.jFuzzyLogic.plot.JFuzzyChart;
+import net.sourceforge.jFuzzyLogic.rule.LinguisticTerm;
 import net.sourceforge.jFuzzyLogic.rule.Variable;
 
 import edu.gmu.fuzzydr.controller.Config;
+import edu.gmu.fuzzydr.controller.FCLCodeGenerator;
 import edu.gmu.fuzzydr.controller.FuzzyDRController;
 import edu.gmu.fuzzydr.controller.SimUtil;
 import sim.engine.SimState;
@@ -31,7 +35,10 @@ public class Agent implements Steppable { //, Stoppable {
 	private double energy;
 	private double agreement;
 	
-	FIS fis;
+	private FIS fis;
+	private FunctionBlock functionBlock;
+	private Variable selfEnergyVar, neighborEnergyVar, agreementVar; 
+	
 	
 	private double locX;
 	private double locY;
@@ -59,14 +66,45 @@ public class Agent implements Steppable { //, Stoppable {
 		// TODO: make this more deliberate based on persona or other data about the agent.
 		this.setAgreement(Config.RANDOM_GENERATOR.nextDouble());
 		
-		// default fuzzy logic
-		InputStream fclFileInputStream = getClass().getResourceAsStream(Config.genericAgentFCLPath);
-		fis = FIS.load(fclFileInputStream, true); // Path to your FCL file, and 2nd argument indicates to print errors or not.
+		// load generic FCL as a template for Agents.
+		//InputStream fclFileInputStream = getClass().getResourceAsStream(Config.genericAgentFCLPath);
+		//fis = FIS.load(fclFileInputStream, true);   // path to FCL file, and 2nd argument indicates to print errors or not.
 
-		if (fis == null) {
-	        System.err.println("Can't load the FCL file!");
-	        return;
-	    }
+		//if (fis == null) {
+	    //    System.err.println("Can't load the FCL file!");
+	    //    return;
+	    //}
+		
+		// load generic FCL as a template for Agents.
+		String fclString = Config.genericAgentFCLPath;  // to be modified as necessary as Agent archetypes are explored.
+		FCLCodeGenerator codeGenerator = new FCLCodeGenerator(fclString);
+		fis = codeGenerator.loadFCL();
+				
+		functionBlock = fis.getFunctionBlock("agent");
+        selfEnergyVar = functionBlock.getVariable("selfEnergy");
+        neighborEnergyVar = functionBlock.getVariable("neighborEnergy");
+        agreementVar = functionBlock.getVariable("agreement");
+		
+        //DEBUG: JFuzzyChart.get().chart(functionBlock);
+        /*
+        More debug from the jFuzzyLogic online docs, as an example with the Tipper Model.
+        
+        // Show 
+        JFuzzyChart.get().chart(functionBlock);
+
+        // Set inputs
+        fis.setVariable("service", 3);
+        fis.setVariable("food", 7);
+
+        // Evaluate
+        fis.evaluate();
+
+        // Show output variable's chart  *** <------- check this out.
+        Variable tip = functionBlock.getVariable("tip");
+        JFuzzyChart.get().chart(tip, tip.getDefuzzifier(), true); 
+         
+        */
+		
 	}
 
 	@Override
@@ -94,6 +132,18 @@ public class Agent implements Steppable { //, Stoppable {
 		updateCommonPoolLevels(state, _remaining);
 		
 		//DEBUG: System.out.println("Agent: " + getAgentID() + ", energy level is: " + getEnergy());
+		
+		
+		//DEBUG: drag out the long tail on the low membership function
+		//if (this.agentID == 0) {
+		//	modifySelfEnergyLow(0, 1, 3, 1, 9, 0);
+		//}
+		
+		
+		// !!!!!!!!!!!!
+		// TODO: add in logic to assess changes in self and world and how that should impact the modification of membership functions.
+		// !!!!!!!!!!!!
+		
 		
 		// add to log file. In generateLogEntry(), it will enter a "0" if this is the last Step before removal from system and could be in negative energy state.
 		FuzzyDRController.logEntries.add(this.generateLogEntry(state));
@@ -182,6 +232,14 @@ public class Agent implements Steppable { //, Stoppable {
 		
 		// something about looking at the current energy level, and then seeing if harvest via ADICO is 'good' or 'not'
 		
+		// TODO:  this is the roll against agreementValue logic here.... !!!
+	}
+	
+	
+	public void newRuleGeneration() {
+		
+		// TODO:  In case the agent decides to break with institution... need logic here to develop new rules for them to follow
+		
 		
 	}
 	
@@ -210,7 +268,75 @@ public class Agent implements Steppable { //, Stoppable {
 		
 	}
 	
+    // Modify the fuzzy set parameters for the 'low' term of selfEnergy variable.
+    /*
+	public void modifySelfEnergyLow(double a, double b, double c) {
+        FuzzySet fuzzySetLow = selfEnergyVar.getLinguisticTerm("low").getTerm();
+        fuzzySetLow.setPoint(0, a);
+        fuzzySetLow.setPoint(1, b);
+        fuzzySetLow.setPoint(2, c);
+    }
+    */
 	
+
+    public void modifySelfEnergyLow(double x1, double x2, double y1, double y2, double z1, double z2) {
+        
+    	// TODO: add a new argument that allows a String input for the linguistic term to use
+    	
+    	//DEBUG: JFuzzyChart.get().chart(functionBlock);
+    	
+    	LinguisticTerm low = selfEnergyVar.getLinguisticTerm("low");
+        
+        MembershipFunctionPieceWiseLinear mf = (MembershipFunctionPieceWiseLinear) low.getMembershipFunction();
+        
+        /*
+        double a1 = mf.getParameter(0);
+        double a2 = mf.getParameter(1);
+        double b1 = mf.getParameter(2);
+        double b2 = mf.getParameter(3);
+        double c1 = mf.getParameter(4);
+        double c2 = mf.getParameter(5);
+		*/
+        
+        //DEBUG: System.out.println("membership function low: (" + a1 + "," + a2 + ") (" + b1 + "," + b2 + ") (" + c1 + "," + c2 + ")");
+        
+        mf.setParameter(0, x1);
+        mf.setParameter(1, x2);
+        mf.setParameter(2, y1);
+        mf.setParameter(3, y2);
+        mf.setParameter(4, z1);
+        mf.setParameter(5, z2);
+        
+        low.setMembershipFunction(mf);
+        
+        /*
+        a1 = mf.getParameter(0);
+        a2 = mf.getParameter(1);
+        b1 = mf.getParameter(2);
+        b2 = mf.getParameter(3);
+        c1 = mf.getParameter(4);
+        c2 = mf.getParameter(5);
+        */
+        
+        //DEBUG: System.out.println("membership function low: (" + a1 + "," + a2 + ") (" + b1 + "," + b2 + ") (" + c1 + "," + c2 + ")");
+        
+        //DEBUG: JFuzzyChart.get().chart(functionBlock);
+        
+    }
+
+    	//mf.setPoint(0, a1, a2);  // Update coordinates of point 0
+    	//mf.setPoint(1, b1, b2);  // Update coordinates of point 1
+    	//mf.setPoint(2, c1, c2);  // Update coordinates of point 2
+
+
+    // Evaluate fuzzy rules and obtain output.
+    public double evaluateAgreement(double selfEnergy, double neighborEnergy) {
+        selfEnergyVar.setValue(selfEnergy);
+        neighborEnergyVar.setValue(neighborEnergy);
+        functionBlock.evaluate();
+        return agreementVar.getValue();
+    }
+    
 	public void cleanup(SimState state) {
 		
 		FuzzyDRController fuzzyDR = (FuzzyDRController) state;
