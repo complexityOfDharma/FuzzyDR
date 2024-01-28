@@ -21,7 +21,7 @@ public class ADICO {
 	public int O_quantity;
 	
 	/**
-	 * Default constructor for an ADICO institutional statement.
+	 * Default constructor for an ADICO institutional statement, w.r.t. aIm(I) and Conditions(C)
 	 * @param a_field
 	 * @param d_field
 	 * @param i_verb
@@ -55,19 +55,19 @@ public class ADICO {
 		
 		this.adico_ID = adico_ID;
 		
-		this.A_field = a_field;
+		this.A_field = a_field;					// Attributes
 		
-		this.D_field = d_field;
+		this.D_field = d_field;					// Deontic
 		
-		this.I_verb = i_verb;
-		this.I_bound = i_bound;
-		this.I_quantity = i_quantity;
-		this.I_object = i_object;
+		this.I_verb = i_verb;					// aIm:  
+		this.I_bound = i_bound;					// aIm:  
+		this.I_quantity = i_quantity;			// aIm:  
+		this.I_object = i_object;				// aIm:  
 		
-		this.C_object = c_object;
-		this.C_bound = c_bound;
-		this.C_quantity = c_quantity;
-		this.C_time = c_time;
+		this.C_object = c_object;				// Conditions: the "what"
+		this.C_bound = c_bound;					// Conditions: 
+		this.C_quantity = c_quantity;			// Conditions: 
+		this.C_time = c_time;					// Conditions: 
 		
 	}
 	

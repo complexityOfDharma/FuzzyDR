@@ -35,6 +35,8 @@ public class Agent implements Steppable { //, Stoppable {
 	private double energy;
 	private double agreement;
 	
+	private double avgNeighborEnergy;
+	
 	private FIS fis;
 	private FunctionBlock functionBlock;
 	private Variable selfEnergyVar, neighborEnergyVar, agreementVar; 
@@ -66,6 +68,12 @@ public class Agent implements Steppable { //, Stoppable {
 		// TODO: make this more deliberate based on persona or other data about the agent.
 		this.setAgreement(Config.RANDOM_GENERATOR.nextDouble());
 		
+		// TODO: at instantiation, set consumption target variable to ADICO, and call internal variable vs ADICO. As agreement checks happen, update internal back to ADICO or continue to modify
+		
+		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		// Set up Fuzzy Inference System for the agent.
+		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		
 		// load generic FCL as a template for Agents.
 		//InputStream fclFileInputStream = getClass().getResourceAsStream(Config.genericAgentFCLPath);
 		//fis = FIS.load(fclFileInputStream, true);   // path to FCL file, and 2nd argument indicates to print errors or not.
@@ -85,7 +93,11 @@ public class Agent implements Steppable { //, Stoppable {
         neighborEnergyVar = functionBlock.getVariable("neighborEnergy");
         agreementVar = functionBlock.getVariable("agreement");
 		
+        //DEBUG: System.out.println("Printing out the FIS for agent: " + this.agentID);
+		//DEBUG: System.out.println(fis);
+		
         //DEBUG: JFuzzyChart.get().chart(functionBlock);
+        
         /*
         More debug from the jFuzzyLogic online docs, as an example with the Tipper Model.
         
@@ -115,13 +127,20 @@ public class Agent implements Steppable { //, Stoppable {
 		// decrement agent energy level for this time step.
 		decrementEnergyLevels(this.energy);
 		
+		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		// Harvest and update self-state and world-state of common pool.
+		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+				
 		// if possible, conduct a harvest.
 		//harvest(this.energy, FuzzyDRController.adico_1.getI_quantity());
 		double _resourceLevel = fuzzyDR.commons.getResourceLevel();
 		double _remaining;   // the amount remaining in the common pool after agent's harvest.
 		
 		// recall the one ADICO institution at play for this model.
+		// TODO: in setting _target, ensure this is pointed to the Agent-level variable for 'self-policy' vs ADICO, since we want to allow for deviation.
 		double _target = fuzzyDR.adico_1.getI_quantity();  // the amount to harvest via the ADICO policy
+		
+		
 		
 		//harvest(this.energy, fuzzyDR.adico_1.getI_quantity());
 		_remaining = harvest(_resourceLevel, this.energy, _target);
@@ -138,6 +157,16 @@ public class Agent implements Steppable { //, Stoppable {
 		//if (this.agentID == 0) {
 		//	modifySelfEnergyLow(0, 1, 3, 1, 9, 0);
 		//}
+		
+		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		// Evaluation of agreement with the institution (or current behavioral).
+		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		
+		// update and evaluate decision making.
+		//evaluateCompliance();
+		double _agree = this.evaluateCompliance();
+		DEBUG: System.out.println("Agent: " + this.getAgentID() + " is evaluating their agreement level as: " + _agree);
+		//DEBUG: JFuzzyChart.get().chart(agreementVar, agreementVar.getDefuzzifier(), true); 
 		
 		
 		// !!!!!!!!!!!!
@@ -166,6 +195,11 @@ public class Agent implements Steppable { //, Stoppable {
 	}
 	
 	public double harvest(double resourceLevel, double energyLevel, double harvestTarget) {
+		
+		// !!!!!!!!!!!!!!!!!!!!!!!!!!!
+		// TODO: !!!!! harvestTarget should be agent's decided consumption... either per ADICO, or if rejected in earlier time steps, some overridden consumption level.
+		// !!!!!!!!!!!!!!!!!!!!!!!!!!!
+		
 		
 		double _harvested = 0;  // the amount that was ultimately harvested (or not) by the agent.
 		// compute the expected remaining if a harvest was conducted.
@@ -213,8 +247,21 @@ public class Agent implements Steppable { //, Stoppable {
 		}
 	}
 	
+	public double calcAvgNeighborEnergy() {
+		
+		double _sum = 0;
+		double _avg = 0;
+		
+		for (Agent a : this.neighbors) {
+			_sum += a.getEnergy();
+		}
+		
+		_avg = _sum / this.neighbors.size();
+		return _avg;
+	}
 	
-	public void assessDeltaParameter() {
+	
+	public void assessDeltaParameters() {
 		
 		//TODO: run method here for internal delta calculation
 		
@@ -225,14 +272,77 @@ public class Agent implements Steppable { //, Stoppable {
 		
 	}
 	
+	//TODO: either make this method evaluate agreement for every delta parameter, or create 3 separate methods.
+	/**
+	 * Evaluate fuzzy rules and obtain output.
+	 * @param selfEnergy
+	 * @param neighborEnergy
+	 * @return
+	 */
+    public double evaluateAgreement(double selfEnergy, double neighborEnergy) {
+        selfEnergyVar.setValue(selfEnergy);
+        neighborEnergyVar.setValue(neighborEnergy);
+        functionBlock.evaluate();
+        return agreementVar.getValue();
+    }
 	
-	public void evalCompliance() {
+    // TODO: pull in the input parameters and convert them appropriately for feeding into the delta internal parameter FIS. 
+    public double evaluateDelta_i() {
+    	double _agreement = 0;
+    	
+    	return _agreement;
+    }
+    
+    // TODO: pull in the input parameters and convert them appropriately for feeding into the delta external parameter FIS.
+    public double evaluateDelta_e() {
+    	double _agreement = 0;
+    	
+    	return _agreement;
+    }
+    
+    // TODO: pull in the input parameters and convert them appropriately for feeding into the delta orElse parameter FIS.
+    public double evaluateDelta_o() {
+    	double _agreement = 0;
+    	
+    	return _agreement;
+    }
+    
+ // TODO: pull in the input parameters and convert them appropriately for feeding into the delta orElse parameter FIS.
+    public double evaluateDelta_tree() {
+    	double _agreement = 0;
+    	
+    	return _agreement;
+    }
+    
+	public double evaluateCompliance() {
 		
 		//TODO: invoke fuzzyDR here and draw from current state deltas
-		
 		// something about looking at the current energy level, and then seeing if harvest via ADICO is 'good' or 'not'
 		
+		
+		// TODO:  need to normalize the energy levels into 10.
+		double _selfEnergy = (this.getEnergy()) / Config.agentInitialEnergy;    // as a percentage of agent energy max.
+		double _neighborEnergy = (this.calcAvgNeighborEnergy()) / Config.agentInitialEnergy;  // as a percentage of agent energy max.
+		
+		DEBUG: System.out.println("_selfEnergy = " + _selfEnergy + ", _neighborEnergy" + _neighborEnergy);
+		
+		//fis.setVariable("selfEnergy", _selfEnergy);
+		//fis.setVariable("neighborEnergy", _neighborEnergy);
+		//fis.evaluate();
+		
+		//double _agreement = agreementVar.getValue();
+		//double _agreement = fis.getVariable("agreement").getValue();
+		//return _agreement;
+		
+		double _agreement = evaluateAgreement(_selfEnergy, _neighborEnergy);
+		return _agreement;
+		
+		
 		// TODO:  this is the roll against agreementValue logic here.... !!!
+		
+		// TODO: !!!!!!!!!!!!!!!!!!!!!!!!! roll and now act 
+		// can call newRuleGenertaion() from here maybe if comes up as non-comply.
+		
 	}
 	
 	
@@ -243,7 +353,10 @@ public class Agent implements Steppable { //, Stoppable {
 		
 	}
 	
-	
+	/**
+	 * Decrement the agent's current energy level by the energy loss per time step that is specified in the Config file.
+	 * @param e
+	 */
 	public void decrementEnergyLevels(double e) {
 		this.setEnergy(e - Config.agentEnergyLossPerStep);
 		
@@ -252,6 +365,11 @@ public class Agent implements Steppable { //, Stoppable {
 		//}
 	}
 	
+	/**
+	 * Update the agent's energy level based on the amount of the successful harvest.
+	 * @param e
+	 * @param harvested
+	 */
 	public void updateEnergyFromHarvest(double e, double harvested) {
 		
 		// update Agent's energy levels by the successful harvest.
@@ -261,6 +379,11 @@ public class Agent implements Steppable { //, Stoppable {
 		this.setEnergy(_energyGain);
 	}
 	
+	/**
+	 * Update the common pool resource level w.r.t. the amount consumed by the agent during this time step.
+	 * @param state
+	 * @param newLevel
+	 */
 	public void updateCommonPoolLevels(SimState state, double newLevel) {
 		FuzzyDRController fuzzyDR = (FuzzyDRController) state;
 		
@@ -278,7 +401,15 @@ public class Agent implements Steppable { //, Stoppable {
     }
     */
 	
-
+	/**
+	 * For dynamic adjustment of fuzzy membership sets during simulation runtime.
+	 * @param x1
+	 * @param x2
+	 * @param y1
+	 * @param y2
+	 * @param z1
+	 * @param z2
+	 */
     public void modifySelfEnergyLow(double x1, double x2, double y1, double y2, double z1, double z2) {
         
     	// TODO: add a new argument that allows a String input for the linguistic term to use
@@ -328,16 +459,11 @@ public class Agent implements Steppable { //, Stoppable {
     	//mf.setPoint(1, b1, b2);  // Update coordinates of point 1
     	//mf.setPoint(2, c1, c2);  // Update coordinates of point 2
 
-
-    // Evaluate fuzzy rules and obtain output.
-    public double evaluateAgreement(double selfEnergy, double neighborEnergy) {
-        selfEnergyVar.setValue(selfEnergy);
-        neighborEnergyVar.setValue(neighborEnergy);
-        functionBlock.evaluate();
-        return agreementVar.getValue();
-    }
-    
-	public void cleanup(SimState state) {
+    /**
+     * Method for cleaning up dead agents.
+     * @param state
+     */
+    public void cleanup(SimState state) {
 		
 		FuzzyDRController fuzzyDR = (FuzzyDRController) state;
 		
@@ -367,19 +493,6 @@ public class Agent implements Steppable { //, Stoppable {
 		//DEBUG: System.out.println("Agent " + this.agentID + " has been cleaned up and removed from the simulation. Remaining active agents are: " + FuzzyDRController.masterMap_ActiveAgents.size());
 	}
 
-	public String generateLogEntry(SimState state) {
-		FuzzyDRController fuzzyDR = (FuzzyDRController) state;
-		
-		double e;
-		if (energy < 0) {
-			e = 0;
-		} else {
-			e = energy;
-		}
-		
-        return fuzzyDR.schedule.getSteps() + "," + agentID + "," + e + "," + agreement;
-    }
-	
 	public void removeAgentEdges(Agent agent, Network network) {
 	    Bag edges = network.getEdgesOut(agent);
 	    for(int i = 0; i < edges.numObjs; i++) {
@@ -393,6 +506,20 @@ public class Agent implements Steppable { //, Stoppable {
 	    }
 	}
 
+	public String generateLogEntry(SimState state) {
+		FuzzyDRController fuzzyDR = (FuzzyDRController) state;
+		
+		double e;
+		if (energy < 0) {
+			e = 0;
+		} else {
+			e = energy;
+		}
+		
+        //return fuzzyDR.schedule.getSteps() + "," + agentID + "," + e + "," + agreement;
+        return fuzzyDR.schedule.getSteps() + "," + getAgentID() + "," + e + "," + getAgreement();
+    }
+	
 	public void setStoppable(Stoppable s) {
 		this.stopper = s;
 	}

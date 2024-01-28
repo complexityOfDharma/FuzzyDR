@@ -4,7 +4,7 @@
  * investigate the ability for agents to adapt their ability to deliberate their compliance
  * with their institutional environment, both institutions-in-form and institutions-in-use.  
  * 
- * @author Brant Horio (2023). George Mason University
+ * @author Brant Horio (2024). George Mason University
  * 
  */
 
@@ -83,7 +83,7 @@ public class FuzzyDRController extends SimState{
     	System.out.println("");
     	System.out.println("An Applicaton to a Simple Model of the Commons");
     	System.out.println("");
-    	System.out.println("@author: Brant Horio, George Mason University, 2023");
+    	System.out.println("@author: Brant Horio, George Mason University, 2024");
     	System.out.println("");
     	//System.out.println("Starting simulation --- Scenario: ");    // + ModelConfigUtil.scenario + " ___");
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
@@ -119,11 +119,14 @@ public class FuzzyDRController extends SimState{
     	buildSmallWorldNetwork(masterList_Agents, Config.initNeighbors, Config.rewiringProb);
     	
     	// DEBUG for checking small world networks
-    	/*
+    	
     	for (Agent a : masterList_Agents) {
     		System.out.println("  Network build complete: agent " + a.getAgentID() + ": neighbors list size of " + a.neighbors.size());
+    		for (Agent aaa : a.neighbors) {
+    			System.out.println("     neighbor: " + aaa.getAgentID());
+    		}
     	}
-    	*/
+    	
     	
     	// setup the Logger.
     	this.logger = new SimulationLogger("src/main/resources/simulation_log.csv");
@@ -192,8 +195,8 @@ public class FuzzyDRController extends SimState{
     }
     
     /**
-     * Small world network buidling via Watts-Strogatz. Starting with creating a regular ring lattice where each node is connected to its k nearest neighbors.
-     * Rewiring each edge with a probability p, which involves replacing it with a new edge that connects the node to a randomly chosen node.
+     * Small world network building via Watts-Strogatz. Starting with creating a regular ring lattice where each node is connected to its k nearest neighbors.
+     * Re-wiring each edge with a probability p, which involves replacing it with a new edge that connects the node to a randomly chosen node.
      * @param agents
      * @param initialNeighbors
      * @param rewireProbability
@@ -219,6 +222,7 @@ public class FuzzyDRController extends SimState{
         // Rewire the network with the given probability
         // TODO: should this be pulled out as a separate method so we can rewire during the run and make the network connections adaptive
     	// TODO: is there a way to link rewiring probability to agent's current state, and preferred links to similar agents? Maybe loop over only agents with same archetype characteristics.
+        /*
         for (int i = 0; i < numAgents; i++) {
             Agent current = agents.get(i);
             
@@ -237,6 +241,32 @@ public class FuzzyDRController extends SimState{
                     Agent oldNeighbor = agents.get((i + j) % numAgents);
                     current.neighbors.remove(oldNeighbor);
                     current.neighbors.add(newNeighbor);
+                }
+            }
+        }
+        */
+        
+	     // Rewire the network with the given probability
+        for (int i = 0; i < numAgents; i++) {
+            Agent current = agents.get(i);
+	
+            for (int j = 1; j <= initialNeighbors / 2; j++) {
+                if (random.nextDouble() < rewireProbability) {
+                    int newNeighborIndex = random.nextInt(numAgents);
+                    Agent newNeighbor = agents.get(newNeighborIndex);
+	
+                    // Ensure the new neighbor isn't the current agent and isn't already a neighbor
+                    while (newNeighbor == current || current.neighbors.contains(newNeighbor)) {
+                        newNeighborIndex = random.nextInt(numAgents);
+                        newNeighbor = agents.get(newNeighborIndex);
+                    }
+	
+                    // Replace the old neighbor with the new one
+                    Agent oldNeighbor = agents.get((i + j) % numAgents);
+                    current.neighbors.remove(oldNeighbor);
+                    oldNeighbor.neighbors.remove(current); // Remove current from old neighbor's list
+                    current.neighbors.add(newNeighbor);
+                    newNeighbor.neighbors.add(current); // Add current to new neighbor's list
                 }
             }
         }

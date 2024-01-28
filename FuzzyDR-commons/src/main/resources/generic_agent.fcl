@@ -1,12 +1,12 @@
 FUNCTION_BLOCK agent 
 
 VAR_INPUT
-    selfEnergy: REAL;
-    neighborEnergy: REAL;
+    selfEnergy : REAL;
+    neighborEnergy : REAL;
 END_VAR
 
 VAR_OUTPUT
-    agreement: REAL;
+    agreement : REAL;
 END_VAR
 
 FUZZIFY selfEnergy
@@ -22,15 +22,32 @@ FUZZIFY neighborEnergy
 END_FUZZIFY
 
 DEFUZZIFY agreement
-    TERM strongly_agree := (0, 0) (0.5, 1) (0.7, 0);
-    TERM oppose := (0.3, 0) (0.5, 1) (1, 1);
-    METHOD: COG; // Center of Gravity
+    //TERM agree := (0.5, 0) (0.7, 1) (1, 0);
+    //TERM disagree := (0, 0) (0.3, 1) (0.5, 1);
+    //METHOD: COG; // Center of Gravity
+    TERM agree := (0.5, 0) (1, 1);
+    TERM disagree := (0, 1) (0.5, 1);
+    METHOD: COG;
 END_DEFUZZIFY
 
 RULEBLOCK No1
+	RULE 1: IF selfEnergy IS low THEN agreement IS disagree;
+	RULE 2: IF selfEnergy IS great THEN agreement IS agree;
+	RULE 3: IF selfEnergy IS ok THEN agreement IS agree;
+	
+	//AND : MIN;	// Use 'min' for 'and'
+	//ACT : MIN;	// Use 'min' activation method
+	//ACCU : MAX;	// Use 'max' accumulation method
+	
     // Add rules as needed. For example:
-    RULE 1: IF selfEnergy IS great AND neighborEnergy IS great THEN agreement IS strongly_agree;
-    RULE 2: IF selfEnergy IS low THEN agreement IS oppose;
+    ////RULE 1: IF selfEnergy IS great THEN agreement IS agree;
+    ////RULE 2: IF selfEnergy IS ok THEN agreement IS disagree;
+    ////RULE 3: IF selfEnergy IS low THEN agreement IS disagree;
+    
+    //RULE 1: IF ( (selfEnergy IS great) OR (selfEnergy IS ok) ) AND ( (neighborEnergy IS great) OR (neighborEnergy IS ok) ) THEN agreement IS agree;
+    //RULE 2: IF selfEnergy IS low THEN agreement IS disagree;
+    ////RULE 3: IF selfEnergy IS low AND neighorEnergy IS low THEN agreement IS disagree;
+    ////RULE 4: IF ( (selfEnergy IS great) OR (selfEnergy IS ok) ) AND neighborEnergy IS low THEN agreement is agree;
 END_RULEBLOCK
 
 END_FUNCTION_BLOCK
