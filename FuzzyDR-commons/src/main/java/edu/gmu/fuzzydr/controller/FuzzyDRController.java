@@ -61,7 +61,7 @@ public class FuzzyDRController extends SimState{
     private SimulationLogger logger;
     public static List<String> logEntries = new ArrayList<>();
     
-	
+    
 	 /** Default constructor. */
     public FuzzyDRController() { 
     	super(Config.RANDOM_SEED); 
@@ -187,7 +187,9 @@ public class FuzzyDRController extends SimState{
     
     private void instantiateInstitutions() throws IOException {
     	
-    	adico_1 = new ADICO(1, null, null, null, null, 10, null, null, null, 0, null, 0);
+    	int _consumptionLevel = Config.consumptionLevel;
+    	
+    	adico_1 = new ADICO(1, null, null, null, null, _consumptionLevel, null, null, null, 0, null, 0);
     	
     	// TODO: consider adding each instantiated ADICO statement to a master list to loop over at a later time.
     	
@@ -221,33 +223,6 @@ public class FuzzyDRController extends SimState{
         }
 
         // Rewire the network with the given probability
-        // TODO: should this be pulled out as a separate method so we can rewire during the run and make the network connections adaptive
-    	// TODO: is there a way to link rewiring probability to agent's current state, and preferred links to similar agents? Maybe loop over only agents with same archetype characteristics.
-        /*
-        for (int i = 0; i < numAgents; i++) {
-            Agent current = agents.get(i);
-            
-            for (int j = 1; j <= initialNeighbors / 2; j++) {
-                if (random.nextDouble() < rewireProbability) {
-                    int newNeighborIndex = random.nextInt(numAgents);
-                    Agent newNeighbor = agents.get(newNeighborIndex);
-                    
-                    // Ensure the new neighbor isn't the current agent and isn't already a neighbor
-                    while (newNeighbor == current || current.neighbors.contains(newNeighbor)) {
-                        newNeighborIndex = random.nextInt(numAgents);
-                        newNeighbor = agents.get(newNeighborIndex);
-                    }
-                   
-                    // Replace the old neighbor with the new one
-                    Agent oldNeighbor = agents.get((i + j) % numAgents);
-                    current.neighbors.remove(oldNeighbor);
-                    current.neighbors.add(newNeighbor);
-                }
-            }
-        }
-        */
-        
-	     // Rewire the network with the given probability
         for (int i = 0; i < numAgents; i++) {
             Agent current = agents.get(i);
 	
@@ -309,66 +284,13 @@ public class FuzzyDRController extends SimState{
 		schedule.scheduleRepeating(0, 3, new Steppable() {
 			public void step(SimState state) {
 				
-				// countExpired = 0; // shouldn't this be initialized at the beginning and outside of the Step()?
-				
-				// TODO: this is insufficient to track losses and expired agents. Need to remove them from masterList if they die.
-				// update system level counts
-				//for (Agent a : masterList_Agents) {
-				
-				// TODO: can't I just kill off agents in the Agent's step method if they drop to 0 energy, remove references, and use a check here solely on the Map size()?
-				// then I don't even need the countExpired counter.
-				
-				
-				///--for (Map.Entry<Integer, Agent> entry : masterMap_ActiveAgents.entrySet()) {
-					
-				///--	Agent a = entry.getValue();
-					
-					//DEBUG: System.out.println("In the Map ForEach loop and currently on agent " + a.getAgentID() + ".");
-					
-				///--	if (a.isDead()) {
-				///--		countExpired++;
-						
-						
-						//masterList_Agents.remove(a);
-						//DEBUG: System.out.println("updated master list of agents is of size: " + masterList_Agents.size());
-				///--	}
-				
-					
-					/*
-					if (a.getEnergy() == 0) {
-						countExpired++;
-						
-						// TODO: verify this is correct.
-						// TODO: a.cleanup();
-						// maybe add the agent to an "active" list that is used to loop over, with the masterList being one to use for population stats.
-					}
-					*/
-			///--}
-				
-				// TODO: implement a logging file trigger here to output all statistics.
-				
-				
 				// update plot data for during runtime.
 				resourcePoolLevels.add(schedule.getSteps(), commons.resourceLevel);
 				
 				// system print statements for overall model statistics
 				int expired = Config.agentPopulation - masterMap_ActiveAgents.size();
-				//DEBUG: System.out.println("countExpired = " + countExpired);
 				DEBUG: System.out.println("End of time step " + schedule.getSteps() + ": countExpired = " + expired + "\n");
 				
-				
-				//if (countExpired == Config.agentPopulation) {
-				/*
-				if (expired == Config.agentPopulation) {
-					System.out.println("");
-					System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-                    System.out.println("Simulation terminated... " + expired + " of " + masterList_Agents.size() + " agents have expired and were removed from the simulation after " + (int) schedule.getTime() + " time steps.");
-                    
-                    logger.logEntries(logEntries);
-                    
-                    state.kill();
-				}
-				*/
 				
 				if (expired == Config.agentPopulation || schedule.getTime() >= Config.terminationStepCount) {
 				    System.out.println("");
@@ -383,28 +305,30 @@ public class FuzzyDRController extends SimState{
 				    
 				    state.kill();
 				}
-
-				
 			}
 		});
-		
-		
     }
     
     public void finish() {
 		super.finish();
-		
-		// TODO: generate the final output file of results.
 	}
 	
 	/**
 	 * Simulation main.
 	 * @param args
+	 * @throws IOException 
 	 */
-	public static void main(String[] args) {
-		doLoop(FuzzyDRController.class, args);
-		System.exit(0);
+	public static void main(String[] args) throws IOException {
+		//doLoop(FuzzyDRController.class, args);
+		//System.exit(0);
 		
+		if (Config.isBatchRun) {
+		    BatchRunManager.runBatchExperiments(args);
+		} else {
+		    doLoop(FuzzyDRController.class, args);
+		}
+		
+		System.exit(0);
 	}
 	
 }
