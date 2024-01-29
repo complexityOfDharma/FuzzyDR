@@ -358,6 +358,7 @@ public class FuzzyDRController extends SimState{
 				
 				
 				//if (countExpired == Config.agentPopulation) {
+				/*
 				if (expired == Config.agentPopulation) {
 					System.out.println("");
 					System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
@@ -367,6 +368,23 @@ public class FuzzyDRController extends SimState{
                     
                     state.kill();
 				}
+				*/
+				
+				if (expired == Config.agentPopulation || schedule.getTime() >= Config.terminationStepCount) {
+				    System.out.println("");
+				    System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+				    if (expired == Config.agentPopulation) {
+				        System.out.println("Simulation terminated... All agents have expired and were removed from the simulation after " + (int) schedule.getTime() + " time steps.");
+				    } else {
+				        System.out.println("Simulation terminated... The time step limit of " + Config.terminationStepCount + " has been reached.");
+				    }
+				    
+				    logger.logEntries(logEntries);
+				    
+				    state.kill();
+				}
+
+				
 			}
 		});
 		

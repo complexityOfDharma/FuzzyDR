@@ -10,6 +10,8 @@ public class Config {
     
     public final static String SIM_NAME = "Fuzzy Deontic Reasoning";
     
+    public final static int terminationStepCount = 2000;
+    
     public final static int agentPopulation = 10;
     public final static double agentInitialEnergy = 100;
     
