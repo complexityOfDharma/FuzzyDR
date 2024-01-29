@@ -66,6 +66,7 @@ public class Agent implements Steppable { //, Stoppable {
 		
 		// default agreement.
 		// TODO: make this more deliberate based on persona or other data about the agent.
+		// TODO: consider making these initial opinions based on the scenario or edge case being tested... e.g., normally distributed around agreement/embrace institution.
 		this.setAgreement(Config.RANDOM_GENERATOR.nextDouble());
 		
 		// TODO: at instantiation, set consumption target variable to ADICO, and call internal variable vs ADICO. As agreement checks happen, update internal back to ADICO or continue to modify
@@ -142,6 +143,7 @@ public class Agent implements Steppable { //, Stoppable {
 		
 		
 		
+		
 		//harvest(this.energy, fuzzyDR.adico_1.getI_quantity());
 		_remaining = harvest(_resourceLevel, this.energy, _target);
 		// update the common pool resource level post successful harvest.
@@ -165,7 +167,7 @@ public class Agent implements Steppable { //, Stoppable {
 		// update and evaluate decision making.
 		//evaluateCompliance();
 		double _agree = this.evaluateCompliance();
-		DEBUG: System.out.println("Agent: " + this.getAgentID() + " is evaluating their agreement level as: " + _agree);
+		//DEBUG: System.out.println("Agent: " + this.getAgentID() + " is evaluating their agreement level as: " + _agree);
 		//DEBUG: JFuzzyChart.get().chart(agreementVar, agreementVar.getDefuzzifier(), true); 
 		
 		
@@ -324,7 +326,7 @@ public class Agent implements Steppable { //, Stoppable {
 		double _selfEnergy = (this.getEnergy()) / Config.agentInitialEnergy;    // as a percentage of agent energy max.
 		double _neighborEnergy = (this.calcAvgNeighborEnergy()) / Config.agentInitialEnergy;  // as a percentage of agent energy max.
 		
-		DEBUG: System.out.println("_selfEnergy = " + _selfEnergy + ", _neighborEnergy" + _neighborEnergy);
+		//DEBUG: System.out.println("_selfEnergy = " + _selfEnergy + ", _neighborEnergy" + _neighborEnergy);
 		
 		//fis.setVariable("selfEnergy", _selfEnergy);
 		//fis.setVariable("neighborEnergy", _neighborEnergy);
@@ -352,6 +354,13 @@ public class Agent implements Steppable { //, Stoppable {
 		
 		
 	}
+	
+	
+	public void decideAction() {
+		
+		// TODO: put in logic here that translates agreement levels to harvest levels (e.g., imitation, to meet need exactly for survival, etc)
+	}
+	
 	
 	/**
 	 * Decrement the agent's current energy level by the energy loss per time step that is specified in the Config file.
@@ -517,7 +526,8 @@ public class Agent implements Steppable { //, Stoppable {
 		}
 		
         //return fuzzyDR.schedule.getSteps() + "," + agentID + "," + e + "," + agreement;
-        return fuzzyDR.schedule.getSteps() + "," + getAgentID() + "," + e + "," + getAgreement();
+        //return fuzzyDR.schedule.getSteps() + "," + getAgentID() + "," + e + "," + getAgreement();
+		return fuzzyDR.schedule.getSteps() + "," + agentID + "," + e + "," + fuzzyDR.commons.getResourceLevel();
     }
 	
 	public void setStoppable(Stoppable s) {

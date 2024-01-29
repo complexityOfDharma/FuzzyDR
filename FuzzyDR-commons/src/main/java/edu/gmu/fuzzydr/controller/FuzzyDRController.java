@@ -119,13 +119,14 @@ public class FuzzyDRController extends SimState{
     	buildSmallWorldNetwork(masterList_Agents, Config.initNeighbors, Config.rewiringProb);
     	
     	// DEBUG for checking small world networks
-    	
+    	/*
     	for (Agent a : masterList_Agents) {
     		System.out.println("  Network build complete: agent " + a.getAgentID() + ": neighbors list size of " + a.neighbors.size());
     		for (Agent aaa : a.neighbors) {
     			System.out.println("     neighbor: " + aaa.getAgentID());
     		}
     	}
+    	*/
     	
     	
     	// setup the Logger.
@@ -186,7 +187,7 @@ public class FuzzyDRController extends SimState{
     
     private void instantiateInstitutions() throws IOException {
     	
-    	adico_1 = new ADICO(1, null, null, null, null, 1, null, null, null, 0, null, 0);
+    	adico_1 = new ADICO(1, null, null, null, null, 10, null, null, null, 0, null, 0);
     	
     	// TODO: consider adding each instantiated ADICO statement to a master list to loop over at a later time.
     	

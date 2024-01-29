@@ -10,14 +10,14 @@ public class Config {
     
     public final static String SIM_NAME = "Fuzzy Deontic Reasoning";
     
-    public final static int agentPopulation = 100;
-    public final static double agentInitialEnergy = 10;
+    public final static int agentPopulation = 10;
+    public final static double agentInitialEnergy = 100;
     
     // TODO: change this energy loss per step according to some ENUM specification of agent types (e.g., selfish, cooperative, etc.).
-    public final static double agentEnergyLossPerStep = 1;
+    public final static double agentEnergyLossPerStep = 5;
     
-    public final static double resourceCarryingCapacity = 5000;
-    public final static double commonsRegrowthRate = 0.1;
+    public final static double resourceCarryingCapacity = 1000;
+    public final static double commonsRegrowthRate = 0.3;
     
     // w.r.t. small world network parameters
     public final static int initNeighbors = 2;
