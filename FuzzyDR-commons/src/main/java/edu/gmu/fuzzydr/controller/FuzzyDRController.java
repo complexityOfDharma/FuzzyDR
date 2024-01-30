@@ -34,6 +34,7 @@ public class FuzzyDRController extends SimState{
 
 	private static final long serialVersionUID = 1L;
 	public static int UID = 0;
+	private int batchRunID;
 	
 	public Continuous2D world = new Continuous2D(1.0, Config.WIDTH, Config.HEIGHT);
 	public Network network = new Network(false);
@@ -67,12 +68,35 @@ public class FuzzyDRController extends SimState{
     	super(Config.RANDOM_SEED); 
     };
 	
+    public FuzzyDRController(long seed) throws IOException {
+    	super(seed);
+    	resourcePoolLevels = new XYSeries("Resource Pool Levels");
+    	
+    	System.out.println("running one-parameter FuzzyDRController constructor...");
+    	
+    	System.out.println("\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+    	System.out.println("FuzzyDR-commons: AGENT-BASED INSTITUTIONAL MODELING AND FUZZY DEONTIC REASONING");
+    	System.out.println("Exploring Adaptive Agent Reasoning within Institutional Environments");
+    	System.out.println("");
+    	System.out.println("An Applicaton to a Simple Model of the Commons");
+    	System.out.println("");
+    	System.out.println("@author: Brant Horio, George Mason University, 2024");
+    	System.out.println("");
+    	//System.out.println("Starting simulation --- Scenario: ");    // + ModelConfigUtil.scenario + " ___");
+        System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+        
+    	initialize();
+    	
+    	// setup the Logger.
+    	this.logger = new SimulationLogger("src/main/resources/sim_log_singleRun.csv");		// single run.
+    }
+    
     /**
      * Constructor.
      * @param seed
      * @throws IOException
      */
-    public FuzzyDRController(long seed) throws IOException {
+    public FuzzyDRController(long seed, String logFilename) throws IOException {
     	super(seed);
     	
     	resourcePoolLevels = new XYSeries("Resource Pool Levels");
@@ -89,6 +113,13 @@ public class FuzzyDRController extends SimState{
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
         
     	initialize();
+    	
+    	// setup the Logger.
+    	if (Config.isBatchRun) {
+    		this.logger = new SimulationLogger(logFilename);		// dynamic filenames for batched runs.
+    	} else {
+    		this.logger = new SimulationLogger("src/main/resources/sim_log_singleRun.csv");		// single run.
+    	}
     
     }
     
@@ -104,6 +135,7 @@ public class FuzzyDRController extends SimState{
     	//masterList_Resources.clear();
     	
     	// clear out output collections
+    	logEntries.clear();
     	
     	// instantiate model objects and add them to the schedule.
     	instantiatePopulation();
@@ -127,11 +159,6 @@ public class FuzzyDRController extends SimState{
     		}
     	}
     	*/
-    	
-    	
-    	// setup the Logger.
-    	this.logger = new SimulationLogger("src/main/resources/simulation_log.csv");
-    	
     }
     
     private void instantiatePopulation() throws IOException {

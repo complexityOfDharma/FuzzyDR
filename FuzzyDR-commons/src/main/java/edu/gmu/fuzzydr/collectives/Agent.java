@@ -527,7 +527,7 @@ public class Agent implements Steppable { //, Stoppable {
 		
         //return fuzzyDR.schedule.getSteps() + "," + agentID + "," + e + "," + agreement;
         //return fuzzyDR.schedule.getSteps() + "," + getAgentID() + "," + e + "," + getAgreement();
-		return fuzzyDR.schedule.getSteps() + "," + agentID + "," + e + "," + fuzzyDR.commons.getResourceLevel();
+		return Config.batchRunID + "," + fuzzyDR.schedule.getSteps() + "," + agentID + "," + e + "," + fuzzyDR.commons.getResourceLevel();
     }
 	
 	public void setStoppable(Stoppable s) {

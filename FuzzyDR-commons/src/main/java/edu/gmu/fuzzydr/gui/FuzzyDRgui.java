@@ -55,16 +55,21 @@ public class FuzzyDRgui extends GUIState {
     public HistogramGenerator agreementHistogram;
     
     // called by GUI main.
+    // NOTE: the GUI is not used for batch runs
     public FuzzyDRgui() throws IOException {
+    	//super(new FuzzyDRController(Config.RANDOM_SEED, "src/main/resources/sim_log_singleRun.csv"));
     	super(new FuzzyDRController(Config.RANDOM_SEED));
 		fuzzyDRController = (FuzzyDRController) state;
 		//setupDisplayAndAttachPortrayals();
+		Config.isBatchRun = false;
     }
     
+    // NOTE: the GUI is not used for batch runs
     public FuzzyDRgui(SimState state) {
 		super(state);
 		fuzzyDRController = (FuzzyDRController) state;
 		//setupDisplayAndAttachPortrayals();
+		Config.isBatchRun = false;
 	}
     
     public static String getName() {

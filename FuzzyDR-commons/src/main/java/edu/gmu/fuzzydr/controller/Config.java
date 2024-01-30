@@ -19,7 +19,7 @@ public class Config {
     public static int agentEnergyLossPerStep = 5;
     public final static int consumptionLevel = 10;
     
-    public static double resourceCarryingCapacity = 5000;
+    public static int resourceCarryingCapacity = 5000;
     public final static double commonsRegrowthRate = 0.3;
     
     // w.r.t. small world network parameters
@@ -34,6 +34,7 @@ public class Config {
     public static final String delta_tree_FCLPath = "/delta_tree.fcl";   			// specified with leading '/' for path absolute relative to the classpath root.
     
     // batch run parameters
+    public static int batchRunID = 0;
     public static boolean isBatchRun = true;
     //public static int[] resourceCarryingCapacityRange = new int[] { 5000, 10000, 1000 };	// { start, stop, step size }.
     //public static double[] commonsRegrowthRateRange = new double[] { 0.05, 0.1, 0.05 };		// { start, stop, step size }.

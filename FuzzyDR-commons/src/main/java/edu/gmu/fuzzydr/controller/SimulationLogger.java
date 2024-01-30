@@ -15,7 +15,7 @@ public class SimulationLogger {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath, false))) {
         	
         	// headers
-            writer.write("Step, AgentID, Energy-Level, Common-Pool-Levels\n");
+            writer.write("Run, Step, AgentID, Energy-Level, Common-Pool-Levels\n");
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -1,1 +1,10 @@
 /edu/
+/sim_log_batch_0.csv
+/sim_log_batch_1.csv
+/sim_log_batch_2.csv
+/sim_log_batch_3.csv
+/sim_log_singleRun.csv
+/log_run0_n=100_K=1000.csv
+/log_run1_n=100_K=2000.csv
+/log_run2_n=101_K=1000.csv
+/log_run3_n=101_K=2000.csv
