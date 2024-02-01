@@ -2,11 +2,11 @@ FUNCTION_BLOCK agent
 
 VAR_INPUT
     selfEnergy : REAL;
-    neighborEnergy : REAL;
+    selfConsumption : REAL;
 END_VAR
 
 VAR_OUTPUT
-    agreement : REAL;
+    delta_i : REAL;
 END_VAR
 
 FUZZIFY selfEnergy
@@ -31,14 +31,14 @@ DEFUZZIFY agreement
 END_DEFUZZIFY
 
 RULEBLOCK No1
+	AND : MIN;	// Use 'min' for 'and'
+	ACT : MIN;	// Use 'min' activation method
+	ACCU : MAX;	// Use 'max' accumulation method
+
 	RULE 1: IF selfEnergy IS low THEN agreement IS disagree;
 	RULE 2: IF selfEnergy IS great THEN agreement IS agree;
 	RULE 3: IF selfEnergy IS ok THEN agreement IS agree;
-	
-	//AND : MIN;	// Use 'min' for 'and'
-	//ACT : MIN;	// Use 'min' activation method
-	//ACCU : MAX;	// Use 'max' accumulation method
-	
+		
     // Add rules as needed. For example:
     ////RULE 1: IF selfEnergy IS great THEN agreement IS agree;
     ////RULE 2: IF selfEnergy IS ok THEN agreement IS disagree;

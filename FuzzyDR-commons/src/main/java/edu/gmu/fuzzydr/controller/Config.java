@@ -28,13 +28,27 @@ public class Config {
     
     // fuzzy logic
     
-    public static boolean isFuzzyRun = false;										// if fuzzy inference is active or not for model runs.
+    public static boolean isFuzzyDRforALL = false;										// if fuzzy inference is active or not for model runs.
     
     public static final String genericAgentFCLPath = "/generic_agent.fcl"; 			// specified with leading '/' for path absolute relative to the classpath root.
     public static final String delta_i_FCLPath = "/delta_i.fcl";   					// specified with leading '/' for path absolute relative to the classpath root.
     public static final String delta_e_FCLPath = "/delta_e.fcl";   					// specified with leading '/' for path absolute relative to the classpath root.
     public static final String delta_o_FCLPath = "/delta_o.fcl";   					// specified with leading '/' for path absolute relative to the classpath root.
     public static final String delta_tree_FCLPath = "/delta_tree.fcl";   			// specified with leading '/' for path absolute relative to the classpath root.
+    
+    // experiment scenarios
+    // NOTE: to run custom scenarios, make isFuzzyDRforALL = false, and then specify what scenario experiment you want to test with scenarioID.
+    public static final int scenarioID = 0;			// specify the kind of Agent 0 customization you want to do experiments with.
+    
+    // ------- !!! Scenario descriptions. -------
+    // Scenario 1 - delta_i: 'maintain advantage'
+    // Scenario 2 - delta_i: 'desperation'
+    // Scenario 3 - delta_e: 
+    // Scenario 4 - delta_e: 
+    // Scenario 5 - delta_o:
+	// Scenario 6 - delta_o:
+	// Scenario 7 - delta_i + delta_e: 
+	// Scenario 8 - delta_i + delta_e + delta_o: 
     
     // batch run parameters
     public static int batchRunID = 0;

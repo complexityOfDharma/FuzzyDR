@@ -30,12 +30,17 @@ public class Agent implements Steppable { //, Stoppable {
 	
 	private Stoppable stopper;
 	
+    // Local RNG for this agent
+    private ec.util.MersenneTwisterFast localRNG;
+	
 	// Agent attributes
 	private int agentID;
 	private double energy;
 	private double agreement;
 	
 	private double avgNeighborEnergy;
+	
+	private boolean isFuzzyDRActivated;
 	
 	private FIS fis;
 	private FunctionBlock functionBlock;
@@ -57,20 +62,31 @@ public class Agent implements Steppable { //, Stoppable {
 	
 	// Default constructor.
 	public Agent() {
+		// Initialize local RNG with a unique seed.
+        this.localRNG = new ec.util.MersenneTwisterFast(this.agentID);
 		
 		// generate a random UID.
 		this.agentID = SimUtil.generateUID();
 		
 		// agent's energy level is initialized.
 		//this.energy = Config.agentInitialEnergy;			// all population starts at the same level.
-		this.energy = Config.agentInitialEnergy * Config.RANDOM_GENERATOR.nextDouble();		// population starts at random level below initial max.
+		this.energy = Config.agentInitialEnergy * this.localRNG.nextDouble();		// population starts at random level below initial max.
 		// TODO: new initialization scenario here that can spike a condition for a few agents (e.g., ID's 0 - 10) 
+		
+		
+		// default activation for individualized fuzzyDR.
+		this.isFuzzyDRActivated = false;
+		
+		// customize fuzzyDR activation for experiment conditions.
+		// TODO: Note that customization for experiments is flexible for one or many agents.
+		if (this.agentID == 0) {
+			customizeForScenario();
+		}
 		
 		// default agreement.
 		// TODO: make this more deliberate based on persona or other data about the agent.
-		// TODO: consider making these initial opinions based on the scenario or edge case being tested... e.g., normally distributed around agreement/embrace institution.
-		this.setAgreement(Config.RANDOM_GENERATOR.nextDouble());
-		// TODO: at instantiation, set consumption target variable to ADICO, and call internal variable vs ADICO. As agreement checks happen, update internal back to ADICO or continue to modify
+		//this.setAgreement(this.localRNG.nextDouble());
+		this.setAgreement(generateGaussianAgreement(0.9, 0.05)); 	// sets up the population to be highly clustered around 0.9 level of agreement, between 0.8 and 1.0.
 		
 		// default consumption.
 		this.setConsumptionTarget(Config.consumptionLevel);		// initialized to ADICO consumption, but can be overridden with an agent's own-strategy.
@@ -93,6 +109,55 @@ public class Agent implements Steppable { //, Stoppable {
 		
         //DEBUG: JFuzzyChart.get().chart(functionBlock);
 	}
+	
+	/**
+	 * Agent field overrides to meet experiment scenario context and conditions.
+	 */
+    private void customizeForScenario() {
+    	
+    	this.isFuzzyDRActivated = true; 	// Assume we activate this for agentID == 0 in all scenarios for simplicity.
+    	
+        switch (Config.scenarioID) {
+            case 1:
+                // Scenario 1 - delta_i: 'maintain advantage'
+                this.energy = 90;
+                
+                break;
+            case 2:
+                // Scenario 2 - delta_i: 'desperation'
+                this.energy = 20;
+                
+                break;
+            case 3:
+                // Scenario 3 - delta_e: 
+                
+                break;
+            case 4:
+                // Scenario 4 - delta_e: 
+                
+                break;
+            
+            case 5:
+                // Scenario 5 - delta_o:
+            	
+                break;
+            case 6:
+                // Scenario 6 - delta_o:
+            	
+                break;
+            case 7:
+                // Scenario 7 - delta_i + delta_e: 
+            	
+                break;
+            case 8:
+                // Scenario 8 - delta_i + delta_e + delta_o: 
+            	
+                break;
+            default:
+                // Default scenario or no customization.
+                break;
+        }
+    }
 
 	@Override
 	public void step(SimState state) {
@@ -108,8 +173,8 @@ public class Agent implements Steppable { //, Stoppable {
 		double _resourceLevel = fuzzyDR.commons.getResourceLevel();
 		double _remaining = _resourceLevel;   // the amount remaining in the common pool after agent's harvest.
 		
-		// based on experiment runs with or without fuzzyDR
-		if (Config.isFuzzyRun) {
+		// based on experiment runs with or without fuzzyDR (w.r.t. fuzzyDR for all agents, or just this instance).
+		if ((Config.isFuzzyDRforALL) || (this.isFuzzyDRActivated)) {
 			// active fuzzyDR:  use fuzzyDR to assess agreement with current action policy (either institution or self).
 			
 			// TODO: evaluate agreement levels.
@@ -142,7 +207,7 @@ public class Agent implements Steppable { //, Stoppable {
 		
 		
 		// ------- !!! Assess the final outcomes, reassess beliefs, and consider modification of membership functions. -------
-		if (Config.isFuzzyRun) {
+		if (Config.isFuzzyDRforALL) {
 			
 			//  < insert logic here to evaluate potential modification of membership functions. > 
 			
@@ -492,6 +557,23 @@ public class Agent implements Steppable { //, Stoppable {
         //return fuzzyDR.schedule.getSteps() + "," + agentID + "," + e + "," + agreement;
         //return fuzzyDR.schedule.getSteps() + "," + getAgentID() + "," + e + "," + getAgreement();
 		return Config.batchRunID + "," + fuzzyDR.schedule.getSteps() + "," + agentID + "," + e + "," + fuzzyDR.commons.getResourceLevel();
+    }
+	
+	
+	/**
+	 * Generate a normally distributed value between 0.8 and 1.0 for the desired result of highly clustered population that largely agrees with current institutional context.
+	 * @param mean
+	 * @param stdDev
+	 * @return
+	 */
+	private double generateGaussianAgreement(double mean, double stdDev) {
+        // Generate a normally distributed value with mean 0 and standard deviation 1
+        double gaussianValue = localRNG.nextGaussian() * stdDev + mean;
+
+        // Clamp the value to be within [0.8, 1.0] 
+        gaussianValue = Math.min(Math.max(gaussianValue, 0.8), 1.0);
+        
+        return gaussianValue;
     }
 	
 	public void setStoppable(Stoppable s) {
