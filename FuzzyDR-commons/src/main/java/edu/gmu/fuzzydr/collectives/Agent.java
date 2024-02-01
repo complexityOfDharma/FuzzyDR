@@ -62,13 +62,12 @@ public class Agent implements Steppable { //, Stoppable {
 	
 	// Default constructor.
 	public Agent() {
-		// Initialize local RNG with a unique seed.
-        //this.localRNG = new ec.util.MersenneTwisterFast(this.agentID);
-        this.localRNG = new ec.util.MersenneTwisterFast(this.agentID + System.currentTimeMillis());
-        
 		// generate a random UID.
 		this.agentID = SimUtil.generateUID();
 		
+		// Initialize local RNG with a unique seed based on generated AgentID.
+        this.localRNG = new ec.util.MersenneTwisterFast(this.agentID);
+        
 		// agent's energy level is initialized.
 		//this.energy = Config.agentInitialEnergy;			// all population starts at the same level.
 		this.energy = Config.agentInitialEnergy * this.localRNG.nextDouble();		// population starts at random level below initial max.
