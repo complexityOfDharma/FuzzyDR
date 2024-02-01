@@ -55,19 +55,21 @@ public class ADICO {
 		
 		this.adico_ID = adico_ID;
 		
-		this.A_field = a_field;					// Attributes
+		this.A_field = a_field;					// Attributes: who.
 		
-		this.D_field = d_field;					// Deontic
+		this.D_field = d_field;					// Deontic: forbidden, permitted, obligated.
 		
-		this.I_verb = i_verb;					// aIm:  
-		this.I_bound = i_bound;					// aIm:  
-		this.I_quantity = i_quantity;			// aIm:  
-		this.I_object = i_object;				// aIm:  
+		this.I_verb = i_verb;					// aIm: e.g., demand, harvest, consume.
+		this.I_bound = i_bound;					// aIm: e.g., less than, more than.
+		this.I_quantity = i_quantity;			// aIm: amount.
+		this.I_object = i_object;				// aIm: e.g., water, resources.
 		
-		this.C_object = c_object;				// Conditions: the "what"
-		this.C_bound = c_bound;					// Conditions: 
-		this.C_quantity = c_quantity;			// Conditions: 
-		this.C_time = c_time;					// Conditions: 
+		this.C_object = c_object;				// Conditions: e.g., source, reservoir, common pool.
+		this.C_bound = c_bound;					// Conditions: e.g., lower than.
+		this.C_quantity = c_quantity;			// Conditions: amount.
+		this.C_time = c_time;					// Conditions: e.g., at any time, seasonal.
+		
+		//this.O_field							// sanction field (+ risk, etc) for the FIS.
 		
 	}
 	

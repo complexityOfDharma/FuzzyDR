@@ -16,17 +16,20 @@ public class Config {
     public final static double agentInitialEnergy = 100;
     
     // TODO: change this energy loss per step according to some ENUM specification of agent types (e.g., selfish, cooperative, etc.).
-    public static int agentEnergyLossPerStep = 5;
-    public final static int consumptionLevel = 10;
+    public static int agentEnergyLossPerStep = 1;
+    public final static int consumptionLevel = 1;
     
-    public static int resourceCarryingCapacity = 5000;
+    public static int resourceCarryingCapacity = 1200;
     public final static double commonsRegrowthRate = 0.3;
     
     // w.r.t. small world network parameters
     public final static int initNeighbors = 2;
     public final static double rewiringProb = 0.05;  //0.8;
     
-    // fuzzy logic files.
+    // fuzzy logic
+    
+    public static boolean isFuzzyRun = false;										// if fuzzy inference is active or not for model runs.
+    
     public static final String genericAgentFCLPath = "/generic_agent.fcl"; 			// specified with leading '/' for path absolute relative to the classpath root.
     public static final String delta_i_FCLPath = "/delta_i.fcl";   					// specified with leading '/' for path absolute relative to the classpath root.
     public static final String delta_e_FCLPath = "/delta_e.fcl";   					// specified with leading '/' for path absolute relative to the classpath root.
@@ -41,8 +44,8 @@ public class Config {
     //public static int[] consumptionLevelRange = new int[] { 1, 10, 5 };						// { start, stop, step size }.
     //public static int[] agentEnergyLossPerStepRange = new int[] { 1, 5, 1};					// { start, stop, step size }.
     
-    public static int[] agentPopulationRange = new int[] { 100, 101, 1 };					// { start, stop, step size }.
-    public static int[] resourceCarryingCapacityRange = new int[] { 1000, 2000, 1000 };		// { start, stop, step size }.
+    public static int[] agentPopulationRange = new int[] { 100, 100, 1 };					// { start, stop, step size }.
+    public static int[] resourceCarryingCapacityRange = new int[] { 1331, 1331, 1 };		// { start, stop, step size }.
     public static double[] commonsRegrowthRateRange = new double[] { 0.3, 0.3, 0 };			// { start, stop, step size }.
     public static int[] agentEnergyLossPerStepRange = new int[] { 5, 5, 0};					// { start, stop, step size }.
     public static int[] consumptionLevelRange = new int[] { 10, 10, 0 };					// { start, stop, step size }.

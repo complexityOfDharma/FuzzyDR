@@ -45,7 +45,8 @@ public class Agent implements Steppable { //, Stoppable {
 	private double locX;
 	private double locY;
 	
-	private double energyConsumption = Config.agentEnergyLossPerStep;       // Energy units lost per time step. Customization by Agent type/ENUM possible in Config. 
+	//private double energyConsumption = Config.agentEnergyLossPerStep;       // Energy units lost per time step. Customization by Agent type/ENUM possible in Config. 
+	private double consumptionTarget;	// agent's policy for consumption (either aligned to institution, or own-strategy).
 	
 	public List<Agent> neighbors = new ArrayList<>();
 	
@@ -61,29 +62,22 @@ public class Agent implements Steppable { //, Stoppable {
 		this.agentID = SimUtil.generateUID();
 		
 		// agent's energy level is initialized.
-		//this.energy = Config.agentInitialEnergy;
-		this.energy = Config.agentInitialEnergy * Config.RANDOM_GENERATOR.nextDouble();
+		//this.energy = Config.agentInitialEnergy;			// all population starts at the same level.
+		this.energy = Config.agentInitialEnergy * Config.RANDOM_GENERATOR.nextDouble();		// population starts at random level below initial max.
+		// TODO: new initialization scenario here that can spike a condition for a few agents (e.g., ID's 0 - 10) 
 		
 		// default agreement.
 		// TODO: make this more deliberate based on persona or other data about the agent.
 		// TODO: consider making these initial opinions based on the scenario or edge case being tested... e.g., normally distributed around agreement/embrace institution.
 		this.setAgreement(Config.RANDOM_GENERATOR.nextDouble());
-		
 		// TODO: at instantiation, set consumption target variable to ADICO, and call internal variable vs ADICO. As agreement checks happen, update internal back to ADICO or continue to modify
 		
-		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-		// Set up Fuzzy Inference System for the agent.
-		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		// default consumption.
+		this.setConsumptionTarget(Config.consumptionLevel);		// initialized to ADICO consumption, but can be overridden with an agent's own-strategy.
 		
-		// load generic FCL as a template for Agents.
-		//InputStream fclFileInputStream = getClass().getResourceAsStream(Config.genericAgentFCLPath);
-		//fis = FIS.load(fclFileInputStream, true);   // path to FCL file, and 2nd argument indicates to print errors or not.
+		
+		// ------- !!! Set up Fuzzy Inference System for the agent. -------
 
-		//if (fis == null) {
-	    //    System.err.println("Can't load the FCL file!");
-	    //    return;
-	    //}
-		
 		// load generic FCL as a template for Agents.
 		String fclString = Config.genericAgentFCLPath;  // to be modified as necessary as Agent archetypes are explored.
 		FCLCodeGenerator codeGenerator = new FCLCodeGenerator(fclString);
@@ -98,26 +92,6 @@ public class Agent implements Steppable { //, Stoppable {
 		//DEBUG: System.out.println(fis);
 		
         //DEBUG: JFuzzyChart.get().chart(functionBlock);
-        
-        /*
-        More debug from the jFuzzyLogic online docs, as an example with the Tipper Model.
-        
-        // Show 
-        JFuzzyChart.get().chart(functionBlock);
-
-        // Set inputs
-        fis.setVariable("service", 3);
-        fis.setVariable("food", 7);
-
-        // Evaluate
-        fis.evaluate();
-
-        // Show output variable's chart  *** <------- check this out.
-        Variable tip = functionBlock.getVariable("tip");
-        JFuzzyChart.get().chart(tip, tip.getDefuzzifier(), true); 
-         
-        */
-		
 	}
 
 	@Override
@@ -128,26 +102,38 @@ public class Agent implements Steppable { //, Stoppable {
 		// decrement agent energy level for this time step.
 		decrementEnergyLevels(this.energy);
 		
-		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-		// Harvest and update self-state and world-state of common pool.
-		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		// ------- !!! Harvest and update self-state and world-state of common pool. -------
 				
-		// if possible, conduct a harvest.
-		//harvest(this.energy, FuzzyDRController.adico_1.getI_quantity());
+		// If possible, conduct a harvest.
 		double _resourceLevel = fuzzyDR.commons.getResourceLevel();
-		double _remaining;   // the amount remaining in the common pool after agent's harvest.
+		double _remaining = _resourceLevel;   // the amount remaining in the common pool after agent's harvest.
 		
-		// recall the one ADICO institution at play for this model.
-		// TODO: in setting _target, ensure this is pointed to the Agent-level variable for 'self-policy' vs ADICO, since we want to allow for deviation.
-		double _target = fuzzyDR.adico_1.getI_quantity();  // the amount to harvest via the ADICO policy
+		// based on experiment runs with or without fuzzyDR
+		if (Config.isFuzzyRun) {
+			// active fuzzyDR:  use fuzzyDR to assess agreement with current action policy (either institution or self).
+			
+			// TODO: evaluate agreement levels.
+			// TODO: do it in a way that allows me to measure agreement-with-ADICO, noting that agent may be in 'agreement' but w.r.t. self-policy and not ADICO.
+			
+			// ------- !!! Evaluation of agreement with the institution (or current behavioral). -------
+			
+			// update and evaluate decision making.
+			double _agree = this.evaluateCompliance();
+			//DEBUG: System.out.println("Agent: " + this.getAgentID() + " is evaluating their agreement level as: " + _agree);
+			//DEBUG: JFuzzyChart.get().chart(agreementVar, agreementVar.getDefuzzifier(), true); 
+						
+			// TODO: Based on agreement (or disagreement), run methods to determine action.
+			
+			// < insert action logic here to decide on new harvest target >
+			// < insert method here for harvest( ... parameterized for the new action ... ).
+			
+		} else {
+			// not active fuzzyDR: assumes uniform compliance with the institution and agent will target consumption to match institution prescription.
+			double _target = fuzzyDR.adico_1.getI_quantity();  // the amount to harvest via the ADICO policy
 		
+			_remaining = harvest(_resourceLevel, this.energy, _target);
+		}
 		
-		
-		
-		//harvest(this.energy, fuzzyDR.adico_1.getI_quantity());
-		_remaining = harvest(_resourceLevel, this.energy, _target);
-		// update the common pool resource level post successful harvest.
-		//fuzzyDR.commons.setResourceLevel(_remaining);
 		
 		// after the agent's harvest, update the common pool resource level.
 		updateCommonPoolLevels(state, _remaining);
@@ -155,53 +141,33 @@ public class Agent implements Steppable { //, Stoppable {
 		//DEBUG: System.out.println("Agent: " + getAgentID() + ", energy level is: " + getEnergy());
 		
 		
-		//DEBUG: drag out the long tail on the low membership function
-		//if (this.agentID == 0) {
-		//	modifySelfEnergyLow(0, 1, 3, 1, 9, 0);
-		//}
+		// ------- !!! Assess the final outcomes, reassess beliefs, and consider modification of membership functions. -------
+		if (Config.isFuzzyRun) {
+			
+			//  < insert logic here to evaluate potential modification of membership functions. > 
+			
+		}
 		
-		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-		// Evaluation of agreement with the institution (or current behavioral).
-		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-		
-		// update and evaluate decision making.
-		//evaluateCompliance();
-		double _agree = this.evaluateCompliance();
-		//DEBUG: System.out.println("Agent: " + this.getAgentID() + " is evaluating their agreement level as: " + _agree);
-		//DEBUG: JFuzzyChart.get().chart(agreementVar, agreementVar.getDefuzzifier(), true); 
-		
-		
-		// !!!!!!!!!!!!
-		// TODO: add in logic to assess changes in self and world and how that should impact the modification of membership functions.
-		// !!!!!!!!!!!!
-		
-		
-		// add to log file. In generateLogEntry(), it will enter a "0" if this is the last Step before removal from system and could be in negative energy state.
+		// ------- !!! Log outcomes -------
+		// Log file entry and if applicable, record final entry for agent before they are removed from system.
 		FuzzyDRController.logEntries.add(this.generateLogEntry(state));
 					
-		// STOPPING CONDITION:
-		// Given energy update at start of step and accounting for any possible harvest afterward, determine if agent should be removed.
+		// ------- !!! AGENT TERMINATION CONDITION: Remove agent if self-energy is depleted. -------
+		// Assuming a 'wasteland' model, agents die off if no energy remains (energy is not allowed to go negative.
 		if (this.getEnergy() <= 0) {
 			
 			// avoid null pointer exception
 			if (stopper != null) {
 				this.cleanup(state);   // remove references to this agent.
 				
-				//TODO: determine if the stop() method removes agents totally from memory, since keep a list of all agents was meant for stats keeping purposes, and active map for looping over those not dead.
-				//TODO: if the above is true and agents are removed, one possible adjustment is to just turn off the stopper.stop()?
 				stopper.stop();   // take agent off schedule.
-				
 			}
 		}
-		
 	}
 	
 	public double harvest(double resourceLevel, double energyLevel, double harvestTarget) {
 		
-		// !!!!!!!!!!!!!!!!!!!!!!!!!!!
 		// TODO: !!!!! harvestTarget should be agent's decided consumption... either per ADICO, or if rejected in earlier time steps, some overridden consumption level.
-		// !!!!!!!!!!!!!!!!!!!!!!!!!!!
-		
 		
 		double _harvested = 0;  // the amount that was ultimately harvested (or not) by the agent.
 		// compute the expected remaining if a harvest was conducted.
@@ -348,17 +314,17 @@ public class Agent implements Steppable { //, Stoppable {
 	}
 	
 	
+	public void decideAction() {
+		
+		// TODO: put in logic here that translates agreement levels to harvest levels (e.g., imitation, to meet need exactly for survival, etc)
+		// or... it could be new action innovation. Does not need to be fancy. Maybe just 'imitate' or 'exactly fufill need.'
+	}
+	
+	
 	public void newRuleGeneration() {
 		
 		// TODO:  In case the agent decides to break with institution... need logic here to develop new rules for them to follow
 		
-		
-	}
-	
-	
-	public void decideAction() {
-		
-		// TODO: put in logic here that translates agreement levels to harvest levels (e.g., imitation, to meet need exactly for survival, etc)
 	}
 	
 	
@@ -369,9 +335,7 @@ public class Agent implements Steppable { //, Stoppable {
 	public void decrementEnergyLevels(double e) {
 		this.setEnergy(e - Config.agentEnergyLossPerStep);
 		
-		//if (state.schedule.getSteps() > 0) {
-		//	this.setEnergy(e - energyConsumption);
-		//}
+		//if (state.schedule.getSteps() > 0) { this.setEnergy(e - energyConsumption); }
 	}
 	
 	/**
@@ -568,6 +532,14 @@ public class Agent implements Steppable { //, Stoppable {
 
 	public void setAgreement(double agreement) {
 		this.agreement = agreement;
+	}
+
+	public double getConsumptionTarget() {
+		return consumptionTarget;
+	}
+
+	public void setConsumptionTarget(double consumptionTarget) {
+		this.consumptionTarget = consumptionTarget;
 	}
 
 	public boolean isDead() {
