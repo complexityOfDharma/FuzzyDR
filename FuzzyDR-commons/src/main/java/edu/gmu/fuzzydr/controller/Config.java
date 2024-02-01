@@ -59,7 +59,7 @@ public class Config {
     //public static int[] agentEnergyLossPerStepRange = new int[] { 1, 5, 1};					// { start, stop, step size }.
     
     public static int[] agentPopulationRange = new int[] { 100, 100, 1 };					// { start, stop, step size }.
-    public static int[] resourceCarryingCapacityRange = new int[] { 1331, 1331, 1 };		// { start, stop, step size }.
+    public static int[] resourceCarryingCapacityRange = new int[] { 1000, 1000, 1 };		// { start, stop, step size }.
     public static double[] commonsRegrowthRateRange = new double[] { 0.3, 0.3, 0 };			// { start, stop, step size }.
     public static int[] agentEnergyLossPerStepRange = new int[] { 5, 5, 0};					// { start, stop, step size }.
     public static int[] consumptionLevelRange = new int[] { 10, 10, 0 };					// { start, stop, step size }.

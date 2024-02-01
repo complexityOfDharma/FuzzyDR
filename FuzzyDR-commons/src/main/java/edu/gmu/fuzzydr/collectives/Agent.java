@@ -63,8 +63,9 @@ public class Agent implements Steppable { //, Stoppable {
 	// Default constructor.
 	public Agent() {
 		// Initialize local RNG with a unique seed.
-        this.localRNG = new ec.util.MersenneTwisterFast(this.agentID);
-		
+        //this.localRNG = new ec.util.MersenneTwisterFast(this.agentID);
+        this.localRNG = new ec.util.MersenneTwisterFast(this.agentID + System.currentTimeMillis());
+        
 		// generate a random UID.
 		this.agentID = SimUtil.generateUID();
 		
@@ -87,6 +88,8 @@ public class Agent implements Steppable { //, Stoppable {
 		// TODO: make this more deliberate based on persona or other data about the agent.
 		//this.setAgreement(this.localRNG.nextDouble());
 		this.setAgreement(generateGaussianAgreement(0.9, 0.05)); 	// sets up the population to be highly clustered around 0.9 level of agreement, between 0.8 and 1.0.
+		
+		System.out.println("AgentID: " + this.agentID + ", and agreement: " + this.agreement);
 		
 		// default consumption.
 		this.setConsumptionTarget(Config.consumptionLevel);		// initialized to ADICO consumption, but can be overridden with an agent's own-strategy.
