@@ -97,11 +97,11 @@ public class Agent implements Steppable { //, Stoppable {
 		// default activation for individualized fuzzyDR.
 		this.setFuzzyDRActivated(false);	// all population default to not-fuzzyDR on individual level. Config fuzzyDR-for-all setting can override for full population fuzzyDR runs.
 		
-		// customize fuzzyDR activation for experiment conditions (for one or many agents).
-		if ((Config.isExperimentRun) && (this.agentID == 0)) {							// agent_zero as our test subject.
+		// customize fuzzyDR activation for experiment conditions (for one or many agents), unless it is a control run and we want to run Scenario configurations, but with no active fuzzyDR.
+		if ((Config.isExperimentRun) && (this.agentID == 0)) {		// agent_zero as our test subject.
 			customizeFuzzyAgentForScenario();
 		} else {
-			customizeNonFuzzyPopulationForScenario();		// configure rest of population to match desired scenario context.
+			customizeNonFuzzyPopulationForScenario();				// for control case or configure rest of population to match desired scenario context.
 		}
 		
 		// default agreement.
@@ -117,7 +117,7 @@ public class Agent implements Steppable { //, Stoppable {
 		
 		// ------- !!! Set up Fuzzy Inference System for the agent. -------
 		
-		// based on experiment runs with or without fuzzyDR (w.r.t. fuzzyDR for all agents, or just this instance).
+		// based on experiment runs with or without fuzzyDR (w.r.t. fuzzyDR for all agents, or just this instance). BLUF: only load FCLs if needed for a given agent.
 		if ((Config.isFuzzyDRforALL) || (this.isFuzzyDRActivated())) {
 	        // --- load FCL for FIS delta parameter internal ---
 	     	String _fclString_di = Config.delta_i_FCLPath;
