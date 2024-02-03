@@ -98,14 +98,16 @@ public class Agent implements Steppable { //, Stoppable {
 		this.setFuzzyDRActivated(false);	// all population default to not-fuzzyDR on individual level. Config fuzzyDR-for-all setting can override for full population fuzzyDR runs.
 		
 		// customize fuzzyDR activation for experiment conditions (for one or many agents).
-		if (this.agentID == 0) {		// agent_zero as our test subject.
-			customizeForScenario();
+		if ((Config.isExperimentRun) && (this.agentID == 0)) {							// agent_zero as our test subject.
+			customizeFuzzyAgentForScenario();
+		} else {
+			customizeNonFuzzyPopulationForScenario();		// configure rest of population to match desired scenario context.
 		}
 		
 		// default agreement.
 		// TODO: make this more deliberate based on persona or other data about the agent.
-		//this.setAgreement(this.localRNG.nextDouble());			// defaults all population to some random agreement level on range [0, 1].
-		this.setAgreement(generateGaussianAgreement(0.9, 0.05)); 	// Scenario Context: "population-in-high-compliance" : defaults all population to highly cluster around 0.9 mean agreement, within range [0.8, 1.0].
+		//this.setAgreement(this.localRNG.nextDouble());					// defaults all population to some random agreement level on range [0, 1].
+		this.setAgreement(generateGaussianAgreement(0.9, 0.05, 0.8, 1.0)); 	// Scenario Context: "population-in-high-compliance" : defaults all population to highly cluster around 0.9 mean agreement, within range [0.8, 1.0].
 		
 		//DEBUG: System.out.println("AgentID: " + this.agentID + ", and agreement: " + this.agreement);
 		
@@ -117,19 +119,7 @@ public class Agent implements Steppable { //, Stoppable {
 		
 		// based on experiment runs with or without fuzzyDR (w.r.t. fuzzyDR for all agents, or just this instance).
 		if ((Config.isFuzzyDRforALL) || (this.isFuzzyDRActivated())) {
-			/*
-			// load generic FCL as a template for Agents.
-			String fclString = Config.genericAgentFCLPath;  // to be modified as necessary as Agent archetypes are explored.
-			FCLCodeGenerator codeGenerator = new FCLCodeGenerator(fclString);
-			fis = codeGenerator.loadFCL();
-					
-			functionBlock = fis.getFunctionBlock("agent");
-	        selfEnergyVar = functionBlock.getVariable("selfEnergy");
-	        neighborEnergyVar = functionBlock.getVariable("neighborEnergy");
-	        agreementVar = functionBlock.getVariable("agreement");
-			*/
-	        
-	        // load FCL for delta parameter internal.
+	        // --- load FCL for FIS delta parameter internal ---
 	     	String _fclString_di = Config.delta_i_FCLPath;
 	     	FCLCodeGenerator _codeGenerator = new FCLCodeGenerator(_fclString_di);
 	     	fis_delta_i = _codeGenerator.loadFCL();
@@ -138,9 +128,9 @@ public class Agent implements Steppable { //, Stoppable {
 	     	diFIS_in_selfEnergy = fb_delta_i.getVariable("selfEnergy");
 	     	diFIS_in_selfConsumption = fb_delta_i.getVariable("selfConsumption");
 	     	diFIS_out_agreement = fb_delta_i.getVariable("delta_i");
+	        //DEBUG: JFuzzyChart.get().chart(fb_delta_i);
 	        
-	        DEBUG: JFuzzyChart.get().chart(fb_delta_i);
-	        
+	     	// --- load FCL for FIS delta parameter external ---
 	     	String _fclString_de = Config.delta_e_FCLPath;
 	     	_codeGenerator = new FCLCodeGenerator(_fclString_de);		// overwrite local var for loading new FCL on delta parameter external.
 	     	fis_delta_e = _codeGenerator.loadFCL();
@@ -149,9 +139,9 @@ public class Agent implements Steppable { //, Stoppable {
 	     	deFIS_in_relativeState = fb_delta_e.getVariable("relativeState");
 	     	deFIS_in_actionConsensus = fb_delta_e.getVariable("actionConsensus");
 	     	deFIS_out_agreement = fb_delta_e.getVariable("delta_e");
-	        
-	     	DEBUG: JFuzzyChart.get().chart(fb_delta_e);
-	     	
+	        //DEBUG: JFuzzyChart.get().chart(fb_delta_e);
+	     		     	
+	     	// --- load FCL for FIS delta parameter or-Else ---
 	     	String _fclString_do = Config.delta_o_FCLPath;
 	     	_codeGenerator = new FCLCodeGenerator(_fclString_do);		// overwrite local var for loading new FCL on delta parameter external.
 	     	fis_delta_o = _codeGenerator.loadFCL();
@@ -160,9 +150,9 @@ public class Agent implements Steppable { //, Stoppable {
 	     	doFIS_in_expectedImpact = fb_delta_o.getVariable("expectedImpact");
 	     	doFIS_in_sanctionRisk = fb_delta_o.getVariable("sanctionRisk");
 	     	doFIS_out_agreement = fb_delta_o.getVariable("delta_o");
-	         
-	     	DEBUG: JFuzzyChart.get().chart(fb_delta_o);
+	        //DEBUG: JFuzzyChart.get().chart(fb_delta_o);
 	     	
+	     	// --- load FCL for FIS tree to determine overall p(obey) ---
 	     	String _fclString_dtree = Config.delta_tree_FCLPath;
 	     	_codeGenerator = new FCLCodeGenerator(_fclString_dtree);		// overwrite local var for loading new FCL on delta parameter external.
 	     	fis_delta_tree = _codeGenerator.loadFCL();
@@ -172,24 +162,91 @@ public class Agent implements Steppable { //, Stoppable {
 	     	dtreeFIS_in_delta_e = fb_delta_tree.getVariable("delta_e");
 	     	dtreeFIS_in_delta_o = fb_delta_tree.getVariable("delta_o");
 	     	dtreeFIS_out_agreement = fb_delta_tree.getVariable("p_obey");
-	        
-	     	DEBUG: JFuzzyChart.get().chart(fb_delta_tree);
-	        
-		}
+	        //DEBUG: JFuzzyChart.get().chart(fb_delta_tree);
+	    }
 	}
 	
 	/**
 	 * Agent field overrides to meet experiment scenario context and conditions.
 	 */
-    private void customizeForScenario() {
+    private void customizeFuzzyAgentForScenario() {
     	
     	this.setFuzzyDRActivated(true); 	// Assume we activate this for agentID == 0 in all scenarios for simplicity.
     	
+    	// TODO: < set general consumption levels, or within scenarios? >
+    	
         switch (Config.scenarioID) {
-            case 1:
+        	case 0:
+        		System.out.println("Running default scenario for agent: " + this.getAgentID() + ".\n");
+        		break;	// no customization.
+        	case 1:
                 // Scenario 1 - delta_i: 'maintain advantage'
-                this.energy = 90;
+        		System.out.println("Running Scenario 1 ('maintain advantage') for agent: " + this.getAgentID() + ".\n");
+        		
+        		// set energy level
+        		this.energy = 90;
+        		
+        		// TODO: < set agreement level w.r.t. scenario >
                 
+        		// TODO: < set consumption target >
+        		
+                break;
+            case 2:
+                // Scenario 2 - delta_i: 'desperation'
+                this.energy = 20;
+                
+                // TODO: < set agreement level w.r.t. scenario >
+                
+                break;
+            case 3:
+                // Scenario 3 - delta_e: 
+                
+            	// TODO: < set energy level >
+            	
+            	// TODO: < set agreement level w.r.t. scenario >
+            	
+            	// TODO: < set consumption target >
+            	
+                break;
+            case 4:
+                // Scenario 4 - delta_e: 
+                
+                break;
+            
+            case 5:
+                // Scenario 5 - delta_o:
+            	
+                break;
+            case 6:
+                // Scenario 6 - delta_o:
+            	
+                break;
+            case 7:
+                // Scenario 7 - delta_i + delta_e: 
+            	
+                break;
+            case 8:
+                // Scenario 8 - delta_i + delta_e + delta_o: 
+            	
+                break;
+            default:
+                // Default scenario or no customization.
+            	break;
+        }
+    }
+
+	/**
+	 * Field overrides for rest of population that is not activated with fuzzyDR to meet experiment scenario context and conditions.
+	 */
+    private void customizeNonFuzzyPopulationForScenario() {
+    	
+    	// TODO: < set general consumption levels, or within scenarios? >
+    	
+    	switch (Config.scenarioID) {
+        	case 1:
+                // Scenario 1 - delta_i: 'maintain advantage'
+                this.setEnergy(generateGaussianAgreement(30, 5, 20, 40));		// set rest of population to be clustered around lower energy levels.
+                //DEBUG: System.out.println("Agent : " + this.agentID + ", energy level of " + this.getEnergy());
                 // TODO: need to update the rest of the population to match the experiment scenario
                 // e.g., in Controller, after all agents have been instantiated, in this scenario, loop through all others not locally activated with fuzzyDR and override their energy to 'low.'
                 
@@ -200,8 +257,14 @@ public class Agent implements Steppable { //, Stoppable {
                 
                 break;
             case 3:
-                // Scenario 3 - delta_e: 
-                
+                // Scenario 3 - delta_e:
+            	
+            	// TODO: < set energy level >
+            	
+            	// TODO: < set agreement level w.r.t. scenario >
+            	
+            	// TODO: < set consumption target >
+            	
                 break;
             case 4:
                 // Scenario 4 - delta_e: 
@@ -642,12 +705,12 @@ public class Agent implements Steppable { //, Stoppable {
 	 * @param stdDev
 	 * @return
 	 */
-	private double generateGaussianAgreement(double mean, double stdDev) {
+	private double generateGaussianAgreement(double mean, double stdDev, double lower, double upper) {
         // Generate a normally distributed value with mean 0 and standard deviation 1
         double gaussianValue = localRNG.nextGaussian() * stdDev + mean;
 
         // Clamp the value to be within [0.8, 1.0] 
-        gaussianValue = Math.min(Math.max(gaussianValue, 0.8), 1.0);
+        gaussianValue = Math.min(Math.max(gaussianValue, lower), upper);
         
         return gaussianValue;
     }

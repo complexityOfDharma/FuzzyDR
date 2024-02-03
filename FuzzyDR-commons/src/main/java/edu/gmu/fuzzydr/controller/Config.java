@@ -38,17 +38,20 @@ public class Config {
     public static final String delta_tree_FCLPath = "/delta_tree.fcl";   			// specified with leading '/' for path absolute relative to the classpath root.
     
     // experiment scenarios
+    public static boolean isExperimentRun = true;		// if true, we are in experiment conditions and identified agents will be activated with fuzzyDR, if false, assume control case and scenario run with no fuzzyDR.
+    
     // NOTE: to run custom scenarios, make isFuzzyDRforALL = false, and then specify what scenario experiment you want to test with scenarioID.
     
     // ------- !!! Scenario descriptions. -------
-    // Scenario 1 - delta_i: 'maintain advantage'
-    // Scenario 2 - delta_i: 'desperation'
-    // Scenario 3 - delta_e: 
-    // Scenario 4 - delta_e: 
-    // Scenario 5 - delta_o:
-	// Scenario 6 - delta_o:
-	// Scenario 7 - delta_i + delta_e: 
-	// Scenario 8 - delta_i + delta_e + delta_o: 
+    // ('0') - no scenario
+    // ('1') - Scenario 1 - delta_i: 'maintain advantage'
+    // ('2') - Scenario 2 - delta_i: 'desperation'
+    // ('3') - Scenario 3 - delta_e: 
+    // ('4') - Scenario 4 - delta_e: 
+    // ('5') - Scenario 5 - delta_o:
+	// ('6') - Scenario 6 - delta_o:
+	// ('7') - Scenario 7 - delta_i + delta_e: 
+	// ('8') - Scenario 8 - delta_i + delta_e + delta_o: 
     public static final int scenarioID = 1;			// specify the kind of Agent 0 customization you want to do experiments with.
     
     
