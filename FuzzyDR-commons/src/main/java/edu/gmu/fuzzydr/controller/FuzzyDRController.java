@@ -314,15 +314,29 @@ public class FuzzyDRController extends SimState{
 				// update plot data for during runtime.
 				resourcePoolLevels.add(schedule.getSteps(), commons.resourceLevel);
 				
-				// system print statements for overall model statistics
-				int expired = Config.agentPopulation - masterMap_ActiveAgents.size();
-				DEBUG: System.out.println("End of time step " + schedule.getSteps() + ": countExpired = " + expired + "\n");
+				// end of time step population-level stats.
+				int _remainingAgents = masterMap_ActiveAgents.size();
+				int _expired = Config.agentPopulation - _remainingAgents;
 				
+				double _sumEnergy = 0;
+				double _sumAgreement = 0;
+				double _avgEnergy;
+				double _avgAgreement;
+				for (Agent a : masterMap_ActiveAgents.values()) {
+					_sumEnergy = _sumEnergy + a.getEnergy();
+					_sumAgreement = _sumAgreement + a.getAgreeemnt_institution();
+				}
 				
-				if (expired == Config.agentPopulation || schedule.getTime() >= Config.terminationStepCount) {
+				_avgEnergy = _sumEnergy / _remainingAgents;
+				_avgAgreement = _sumAgreement / _remainingAgents;
+				
+				DEBUG: System.out.println("End of time step " + schedule.getSteps() + ": populationRemaining = " + _remainingAgents + " : countExpired = " + _expired);
+				DEBUG: System.out.println("... for remaining population, avgerage energy = " + _avgEnergy + ", and average institutional agreement = " + _avgAgreement + "\n");
+				
+				if (_expired == Config.agentPopulation || schedule.getTime() >= Config.terminationStepCount) {
 				    System.out.println("");
 				    System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-				    if (expired == Config.agentPopulation) {
+				    if (_expired == Config.agentPopulation) {
 				        System.out.println("Simulation terminated... All agents have expired and were removed from the simulation after " + (int) schedule.getTime() + " time steps.");
 				    } else {
 				        System.out.println("Simulation terminated... The time step limit of " + Config.terminationStepCount + " has been reached.");

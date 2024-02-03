@@ -98,6 +98,7 @@ public class Agent implements Steppable { //, Stoppable {
 		this.setFuzzyDRActivated(false);	// all population default to not-fuzzyDR on individual level. Config fuzzyDR-for-all setting can override for full population fuzzyDR runs.
 		
 		// customize fuzzyDR activation for experiment conditions (for one or many agents), unless it is a control run and we want to run Scenario configurations, but with no active fuzzyDR.
+		// customize agent(s) based on scenario
 		if ((Config.isExperimentRun) && (this.agentID == 0)) {		// agent_zero as our test subject.
 			customizeFuzzyAgentForScenario();
 		} else {
@@ -128,7 +129,7 @@ public class Agent implements Steppable { //, Stoppable {
 	     	diFIS_in_selfEnergy = fb_delta_i.getVariable("selfEnergy");
 	     	diFIS_in_selfConsumption = fb_delta_i.getVariable("selfConsumption");
 	     	diFIS_out_agreement = fb_delta_i.getVariable("delta_i");
-	        //DEBUG: JFuzzyChart.get().chart(fb_delta_i);
+	        DEBUG: JFuzzyChart.get().chart(fb_delta_i);
 	        
 	     	// --- load FCL for FIS delta parameter external ---
 	     	String _fclString_de = Config.delta_e_FCLPath;
