@@ -10,15 +10,15 @@ public class ADICO {
 	
 	public String I_verb;   // maybe better as an Enum? and Switch statements based on Enum.
 	public String I_bound;
-	public int I_quantity;
+	public double I_quantity;
 	public String I_object;
 	
 	public String C_object;
 	public String C_bound;
-	public int C_quantity;
+	public double C_quantity;
 	public String C_time;
 	
-	public int O_quantity;
+	public double O_quantity;
 	
 	/**
 	 * Default constructor for an ADICO institutional statement, w.r.t. aIm(I) and Conditions(C)
@@ -43,15 +43,15 @@ public class ADICO {
 			
 			String i_verb,
 			String i_bound,
-			int i_quantity,
+			double i_quantity,
 			String i_object,
 			
 			String c_object,
 			String c_bound,
-			int c_quantity,
+			double c_quantity,
 			String c_time,
 			
-			int o_quantity) {
+			double o_quantity) {
 		
 		this.adico_ID = adico_ID;
 		
@@ -117,7 +117,7 @@ public class ADICO {
 		I_bound = i_bound;
 	}
 
-	public int getI_quantity() {
+	public double getI_quantity() {
 		return I_quantity;
 	}
 
@@ -149,7 +149,7 @@ public class ADICO {
 		C_bound = c_bound;
 	}
 
-	public int getC_quantity() {
+	public double getC_quantity() {
 		return C_quantity;
 	}
 
@@ -165,7 +165,7 @@ public class ADICO {
 		C_time = c_time;
 	}
 
-	public int getO_quantity() {
+	public double getO_quantity() {
 		return O_quantity;
 	}
 

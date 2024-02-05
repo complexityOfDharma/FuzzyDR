@@ -198,6 +198,8 @@ public class FuzzyDRgui extends GUIState {
     
     public void updateAgreementHistogram(SimState state) {
     	
+    	// TODO: adjust the x-axis for the historgram to show the entire range of [0, 1] vs dynamic scaling to only the data values.
+    	
     	FuzzyDRController fuzzyDR = (FuzzyDRController) state;
     	
         // Ensure you’re running on the GUI thread if this method alters GUI components
@@ -214,7 +216,7 @@ public class FuzzyDRgui extends GUIState {
             //for(int i = 0; i < fuzzyDR.masterMap_ActiveAgents.size(); i++) {
             for (Agent a : fuzzyDR.masterMap_ActiveAgents.values()) {
             	//double value = fuzzyDR.masterMap_ActiveAgents.get(i).getAgreement();
-            	double value = a.getAgreement();
+            	double value = a.getAgreeemnt_institution();
                 agreementLevels[i] = value;
                 i++;
                 

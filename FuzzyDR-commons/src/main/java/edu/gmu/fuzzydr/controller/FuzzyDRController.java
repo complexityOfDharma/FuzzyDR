@@ -82,7 +82,7 @@ public class FuzzyDRController extends SimState{
     	System.out.println("");
     	System.out.println("@author: Brant Horio, George Mason University, 2024");
     	System.out.println("");
-    	//System.out.println("Starting simulation --- Scenario: ");    // + ModelConfigUtil.scenario + " ___");
+    	System.out.println("Starting simulation --- Scenario: " + Config.scenarioID);
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
         
     	initialize();
@@ -109,7 +109,7 @@ public class FuzzyDRController extends SimState{
     	System.out.println("");
     	System.out.println("@author: Brant Horio, George Mason University, 2024");
     	System.out.println("");
-    	//System.out.println("Starting simulation --- Scenario: ");    // + ModelConfigUtil.scenario + " ___");
+    	System.out.println("Starting simulation --- Scenario: " + Config.scenarioID);
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
         
     	initialize();
@@ -196,10 +196,7 @@ public class FuzzyDRController extends SimState{
 	    	// TODO: set up persona and based on that, assign default agreement.
     	}
     	
-    	
-    	
-		System.out.println("... agent instantiation complete: " + masterList_Agents.size() + " agent(s).");
-    	
+    	System.out.println("... agent instantiation complete: " + masterList_Agents.size() + " agent(s).");
     }
     
     private void instantiateResource() throws IOException {
@@ -214,14 +211,13 @@ public class FuzzyDRController extends SimState{
     
     private void instantiateInstitutions() throws IOException {
     	
-    	int _consumptionLevel = Config.consumptionLevel;
+    	double _consumptionLevel = Config.consumptionLevel;
     	
     	adico_1 = new ADICO(1, null, null, null, null, _consumptionLevel, null, null, null, 0, null, 0);
     	
     	// TODO: consider adding each instantiated ADICO statement to a master list to loop over at a later time.
     	
     	//DEBUG: System.out.println("\nInstitution: adico1 -- draw resources of " + adico_1.I_quantity + " with every time step.\n");
-    	
     }
     
     /**

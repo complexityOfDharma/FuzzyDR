@@ -55,12 +55,6 @@ public class Agent implements Steppable { //, Stoppable {
 	// FCL fields and activation for fuzzyDR.
 	private boolean isFuzzyDRActivated;			// for localized activation of fuzzyDR for a given agent.
 	
-	//
-	private FIS fis;
-	private FunctionBlock functionBlock;
-	private Variable selfEnergyVar, neighborEnergyVar, agreementVar;
-	//
-	
 	private FIS fis_delta_i;
 	private FunctionBlock fb_delta_i;
 	private Variable diFIS_in_selfEnergy, diFIS_in_selfConsumption, diFIS_out_agreement;
@@ -90,31 +84,15 @@ public class Agent implements Steppable { //, Stoppable {
 		// Initialize local RNG with a unique seed based on generated AgentID.
         this.localRNG = new ec.util.MersenneTwisterFast(this.agentID);
         
-		// initialize agent starting energy.
-		//this.energy = Config.agentInitialEnergy;									// all population starts at the same level.
-		this.energy = Config.agentInitialEnergy * this.localRNG.nextDouble();		// all population starts at random level below initial max specified in Config.
-		
 		// default activation for individualized fuzzyDR.
 		this.setFuzzyDRActivated(false);	// all population default to not-fuzzyDR on individual level. Config fuzzyDR-for-all setting can override for full population fuzzyDR runs.
 		
-		// customize fuzzyDR activation for experiment conditions (for one or many agents), unless it is a control run and we want to run Scenario configurations, but with no active fuzzyDR.
-		// customize agent(s) based on scenario
-		if ((Config.isExperimentRun) && (this.agentID == 0)) {		// agent_zero as our test subject.
-			customizeFuzzyAgentForScenario();
+		// customize agent(s) based on scenario and fuzzify the appropriate test agents with fuzzyDR parameterization.
+		if ((Config.isScenarioRun) && (this.agentID == 0)) {				// given an experiment scenario run, parameterize Agent Zero for fuzzyDR.
+			customizeFuzzyAgentForScenario(Config.scenarioID);				// this will initialize the target agent with all the scenario parameters, for either a control run or experiment run --- to be routed appropriately in step().
 		} else {
-			customizeNonFuzzyPopulationForScenario();				// for control case or configure rest of population to match desired scenario context.
+			customizeNonFuzzyPopulationForScenario(Config.scenarioID);		// for either control case or configure rest of population to match desired scenario context.
 		}
-		
-		// default agreement.
-		// TODO: make this more deliberate based on persona or other data about the agent.
-		//this.setAgreement(this.localRNG.nextDouble());					// defaults all population to some random agreement level on range [0, 1].
-		this.setAgreement(generateGaussianAgreement(0.9, 0.05, 0.8, 1.0)); 	// Scenario Context: "population-in-high-compliance" : defaults all population to highly cluster around 0.9 mean agreement, within range [0.8, 1.0].
-		
-		//DEBUG: System.out.println("AgentID: " + this.agentID + ", and agreement: " + this.agreement);
-		
-		// default consumption.
-		this.setConsumptionTarget(Config.consumptionLevel);		// initialized to ADICO consumption, but can be overridden with an agent's own consumption policy as model progresses.
-		
 		
 		// ------- !!! Set up Fuzzy Inference System for the agent. -------
 		
@@ -170,68 +148,61 @@ public class Agent implements Steppable { //, Stoppable {
 	/**
 	 * Agent field overrides to meet experiment scenario context and conditions.
 	 */
-    private void customizeFuzzyAgentForScenario() {
+    private void customizeFuzzyAgentForScenario(int scenario) {
     	
     	this.setFuzzyDRActivated(true); 	// Assume we activate this for agentID == 0 in all scenarios for simplicity.
     	
-    	// TODO: < set general consumption levels, or within scenarios? >
-    	
-        switch (Config.scenarioID) {
-        	case 0:
-        		System.out.println("Running default scenario for agent: " + this.getAgentID() + ".\n");
-        		break;	// no customization.
+    	// ----- scenario specific settings for the fuzzyDR population -----
+        switch (scenario) {
         	case 1:
-                // Scenario 1 - delta_i: 'maintain advantage'
-        		System.out.println("Running Scenario 1 ('maintain advantage') for agent: " + this.getAgentID() + ".\n");
+                // Scenario 1 - delta_i: 'maintain advantage' : sufficient energy, compliant with institution, lean toward maintaining 'embrace institution.'
+        		System.out.println("Loading Scenario 1 ('maintain advantage') for active fuzzyDR agentID:" + this.getAgentID() + ".\n");
         		
-        		// set energy level
-        		this.energy = 90;
-        		
-        		// TODO: < set agreement level w.r.t. scenario >
-                
-        		// TODO: < set consumption target >
+        		this.energy = 90;										// initialize a high energy state.
+        		this.setAgreeemnt_institution(0.9);						// initialize a high agreement level that embraces the current institution.
+                this.setConsumptionTarget(Config.consumptionLevel);		// initialize a consumption target that is aligned to institution prescription.
         		
                 break;
             case 2:
-                // Scenario 2 - delta_i: 'desperation'
-                this.energy = 20;
-                
-                // TODO: < set agreement level w.r.t. scenario >
-                
+                // Scenario 2 - delta_i: 'dire straits' : critically low energy levels, compliant with institution, lean toward 'reject institution.'
+            	System.out.println("Loading Scenario 2 ('dire straits') for active fuzzyDR agentID:" + this.getAgentID() + ".\n");
+            	
+            	this.energy = 10;										// initialize a critically low energy state.
+            	this.setAgreeemnt_institution(0.9);						// initialize a high agreement level that embraces the current institution.
+                this.setConsumptionTarget(Config.consumptionLevel);		// initialize a consumption target that is aligned to institution prescription.
+        		
                 break;
             case 3:
                 // Scenario 3 - delta_e: 
-                
-            	// TODO: < set energy level >
-            	
-            	// TODO: < set agreement level w.r.t. scenario >
-            	
-            	// TODO: < set consumption target >
-            	
-                break;
+            	defaultParameterizationForAgents();
+            	break;
             case 4:
                 // Scenario 4 - delta_e: 
-                
+            	defaultParameterizationForAgents();
                 break;
-            
             case 5:
                 // Scenario 5 - delta_o:
-            	
+            	defaultParameterizationForAgents();
                 break;
             case 6:
                 // Scenario 6 - delta_o:
-            	
+            	defaultParameterizationForAgents();
                 break;
             case 7:
                 // Scenario 7 - delta_i + delta_e: 
-            	
+            	// < initialize energy >
+            	// < initialize agreement >
+            	// < initialize consumption target >
                 break;
             case 8:
                 // Scenario 8 - delta_i + delta_e + delta_o: 
-            	
+            	// < initialize energy >
+            	// < initialize agreement >
+            	// < initialize consumption target >
                 break;
             default:
-                // Default scenario or no customization.
+                defaultParameterizationForAgents();
+            	System.out.println("Agent " + this.getAgentID() + " has been initialized with default settings as an active fuzzyDR agent.");
             	break;
         }
     }
@@ -239,94 +210,115 @@ public class Agent implements Steppable { //, Stoppable {
 	/**
 	 * Field overrides for rest of population that is not activated with fuzzyDR to meet experiment scenario context and conditions.
 	 */
-    private void customizeNonFuzzyPopulationForScenario() {
-    	
-    	// TODO: < set general consumption levels, or within scenarios? >
-    	
-    	switch (Config.scenarioID) {
+    private void customizeNonFuzzyPopulationForScenario(int scenario) {
+    	// ----- scenario specific settings for non-fuzzyDR population -----
+    	switch (scenario) {
         	case 1:
                 // Scenario 1 - delta_i: 'maintain advantage'
-                this.setEnergy(generateGaussianAgreement(30, 5, 20, 40));		// set rest of population to be clustered around lower energy levels.
-                //DEBUG: System.out.println("Agent : " + this.agentID + ", energy level of " + this.getEnergy());
-                // TODO: need to update the rest of the population to match the experiment scenario
-                // e.g., in Controller, after all agents have been instantiated, in this scenario, loop through all others not locally activated with fuzzyDR and override their energy to 'low.'
-                
+        		defaultParameterizationForAgents();
                 break;
             case 2:
-                // Scenario 2 - delta_i: 'desperation'
-                this.energy = 20;
-                
+                // Scenario 2 - delta_i: 'dire straits'
+            	defaultParameterizationForAgents();
                 break;
             case 3:
                 // Scenario 3 - delta_e:
-            	
-            	// TODO: < set energy level >
-            	
-            	// TODO: < set agreement level w.r.t. scenario >
-            	
-            	// TODO: < set consumption target >
-            	
+            	this.setEnergy(generateGaussianAgreement(30, 5, 20, 40));		// set rest of population to be clustered around lower energy levels.
+            	// < initialize agreement >
+            	// < initialize consumption target >
                 break;
             case 4:
                 // Scenario 4 - delta_e: 
-                
-                break;
-            
+            	this.setEnergy(generateGaussianAgreement(90, 5, 80, 100));		// set rest of population to be clustered around higher energy levels.
+            	// < initialize agreement >
+            	// < initialize consumption target >
+            	break;
             case 5:
                 // Scenario 5 - delta_o:
-            	
+            	defaultParameterizationForAgents();
                 break;
             case 6:
                 // Scenario 6 - delta_o:
-            	
+            	defaultParameterizationForAgents();
                 break;
             case 7:
                 // Scenario 7 - delta_i + delta_e: 
-            	
-                break;
+            	// < insert some other initialization for the non-Fuzzy population for this multi-delta parameter scenario. >
+            	// < initialize energy >
+            	// < initialize agreement >
+            	// < initialize consumption target >
+            	break;
             case 8:
                 // Scenario 8 - delta_i + delta_e + delta_o: 
-            	
-                break;
+            	// < insert some other initialization for the non-Fuzzy population for this multi-delta parameter scenario. >
+            	// < initialize energy >
+            	// < initialize agreement >
+            	// < initialize consumption target >
+            	break;
             default:
-                // Default scenario or no customization.
-                break;
+            	defaultParameterizationForAgents();
+            	//DEBUG: System.out.println("Non-fuzzyDR agent has been initialized with default settings for energy, consumption targets, and institutional agreement.");
+            	break;
         }
+    }
+    
+    public void defaultParameterizationForAgents() {
+    	// Default scenario or no customization : random energy over entire range, high institutional agreement, consumption targets aligned with institution.
+    	this.energy = Config.agentInitialEnergy * this.localRNG.nextDouble();			// all population starts at random level below initial max specified in Config.
+    	
+    	//TODO: should the default agreement be more random an across the possible range of values?
+    	this.setAgreeemnt_institution(generateGaussianAgreement(0.9, 0.05, 0.8, 1.0)); 	// Scenario Context: "population-in-high-compliance" : defaults all population to highly cluster around 0.9 mean agreement, within range [0.8, 1.0].
+    	
+    	this.setConsumptionTarget(Config.consumptionLevel);								// initialized to ADICO consumption, but can be overridden with an agent's own consumption policy as model progresses.
+    	
+    	//DEBUG: System.out.println("AgentID: " + this.agentID + ", and agreement: " + this.agreement_institution);
     }
 
 	@Override
 	public void step(SimState state) {
-		
 		FuzzyDRController fuzzyDR = (FuzzyDRController) state;
 		
+		DEBUG: if (this.agentID==0) { System.out.println("Running step() for this time step."); }
+		
 		// decrement agent energy level for this time step.
+		DEBUG: if (this.agentID==0) { System.out.println("Decrementing agent energy levels. Starting energy is: " + this.getEnergy()); }
 		decrementEnergyLevels(this.energy);
+		DEBUG: if (this.agentID==0) { System.out.println("... and ending energy is: " + this.getEnergy()); }
 		
 		// ------- !!! Harvest and update self-state and world-state of common pool. -------
-				
-		// If possible, conduct a harvest.
-		double _resourceLevel = fuzzyDR.commons.getResourceLevel();
-		double _remaining = _resourceLevel;   // the amount remaining in the common pool after agent's harvest.
+		double _resourceLevel = fuzzyDR.commons.getResourceLevel();			// resource pool level for current simulation state.
+		double _remaining = _resourceLevel;   								// local variable to track the amount remaining in the common pool after agent's harvest.
 		
+		if (Config.isScenarioRun) {
+			// running a specified experiment scenario.
+			DEBUG: if (this.agentID==0) { System.out.println("Starting conditional logic for this experiment scenario run."); }
+			if (Config.isExperimentalControlRun) {
+				// running active fuzzyDR agents, but without the fuzzyDR processes (no delta parameter checks) and assuming uniform compliance with institution.
+				_remaining = harvest(_resourceLevel, this.energy, this.getConsumptionTarget());
+				DEBUG: if (this.agentID==0) { System.out.println("... Experimental control run is TRUE --- harvest completed without fuzzyDR methods: remaining pool resources of " + _remaining + "."); }
+			} else {
+				// running active fuzzyDR agents with all fuzzyDR processes (includes all delta parameter checks and resulting action decisions).
+				DEBUG: if (this.agentID==0) { System.out.println("... Experimental control run is FALSE --- full fuzzyDR methods for harvest actions by test agents."); }
+				if ((Config.isFuzzyDRforALL) || (this.isFuzzyDRActivated())) {
+					// all active fuzzyDR agents should initiate the fuzzyDR process.
+					_remaining = runFuzzyDR(state);		// all fuzzyDR processes, and to include running harvest.
+					DEBUG: if (this.agentID==0) { System.out.println("... ... fuzzyDR is active for this agent --- full fuzzyDR methods for harvest: remaining pool resources of " + _remaining + "."); }
+				} else {	// this is for rest of population and not test agents or other agents specified for active fuzzyDR.
+					// for the fuzzyDR experiment runs, the rest of the population should follow their consumption targets specified by the scenario parameterization.
+					_remaining = harvest(_resourceLevel, this.energy, this.getConsumptionTarget());
+					DEBUG: if (this.agentID==0) { System.out.println("... ... !!! THIS SHOULD NOT COME UP, with Agent_0 having isFuzzyDRActivated, so should not get here."); }
+				}
+			}
+		} else {
+			// not running a specified experiment scenario, and this should follow institution prescriptions.
+			_remaining = harvest(_resourceLevel, this.energy, this.getConsumptionTarget());
+			DEBUG: if (this.agentID==0) { System.out.println("Starting conditional logic for non-experiment scenario run."); }
+		}
+		
+		
+		/*
 		// based on experiment runs with or without fuzzyDR (w.r.t. fuzzyDR for all agents, or just this instance).
 		if ((Config.isFuzzyDRforALL) || (this.isFuzzyDRActivated())) {
-			// active fuzzyDR:  use fuzzyDR to assess agreement with current action policy (either institution or self).
-			
-			// TODO: evaluate agreement levels.
-			// TODO: do it in a way that allows me to measure agreement-with-ADICO, noting that agent may be in 'agreement' but w.r.t. self-policy and not ADICO.
-			
-			// ------- !!! Evaluation of agreement with the institution (or current behavioral). -------
-			
-			// update and evaluate decision making.
-			// !!!!!!!!!!!!!!!!!!!!!!!!!!!!! double _agree = this.evaluateCompliance();
-			
-			//DEBUG: System.out.println("Agent: " + this.getAgentID() + " is evaluating their agreement level as: " + _agree);
-			//DEBUG: JFuzzyChart.get().chart(agreementVar, agreementVar.getDefuzzifier(), true); 
-						
-			// TODO: Based on agreement (or disagreement), run methods to determine action.
-			
-			// !!! < insert action logic here to decide on new harvest target >
-			// !!! < insert method here for harvest( ... parameterized for the new action ... ).
 			
 			//TEMP:..............
 			double _target = fuzzyDR.adico_1.getI_quantity();  // the amount to harvest via the ADICO policy
@@ -338,33 +330,31 @@ public class Agent implements Steppable { //, Stoppable {
 			double _target = fuzzyDR.adico_1.getI_quantity();  // the amount to harvest via the ADICO policy
 			_remaining = harvest(_resourceLevel, this.energy, _target);
 		}
-		
-		
-		// after the agent's harvest, update the common pool resource level.
-		updateCommonPoolLevels(state, _remaining);
+		*/
 		
 		//DEBUG: System.out.println("Agent: " + getAgentID() + ", energy level is: " + getEnergy());
 		
+		// after the agent's successful harvest, update the common pool resource level.
+		DEBUG: if (this.agentID==0) { System.out.println("Updating common pool resource levels after the harvest. Prior resource levels were: " + fuzzyDR.commons.getResourceLevel()); }
+		updateCommonPoolLevels(state, _remaining);
+		DEBUG: if (this.agentID==0) { System.out.println("... common pool update complete. New resource levels are: " + fuzzyDR.commons.getResourceLevel()); }
 		
 		// ------- !!! Dissertation CH.6: Assess the final outcomes, reassess beliefs, and consider modification of membership functions. -------
-		if (Config.isFuzzyDRforALL) {
-			
+		if (Config.isFuzzyDRforALL) { // OR only do this for fuzzified test agents.
 			//  < insert logic here to evaluate potential modification of membership functions. > 
-			
 		}
+		
+		// TODO: < track agreement trends for institution, with 'reject' state being any consumption_target that is NOT-institution (e.g., agreement with current self-policy may be high, but still divergent from institution) >
 		
 		// ------- !!! Log outcomes -------
 		// Log file entry and if applicable, record final entry for agent before they are removed from system.
 		FuzzyDRController.logEntries.add(this.generateLogEntry(state));
 					
-		// ------- !!! AGENT TERMINATION CONDITION: Remove agent if self-energy is depleted. -------
-		// Assuming a 'wasteland' model, agents die off if no energy remains (energy is not allowed to go negative.
+		// ------- !!! AGENT TERMINATION CONDITION: Remove agent if self-energy is depleted to zero (not allowed to go negative). -------
 		if (this.getEnergy() <= 0) {
-			
 			// avoid null pointer exception
 			if (stopper != null) {
 				this.cleanup(state);   // remove references to this agent.
-				
 				stopper.stop();   // take agent off schedule.
 			}
 		}
@@ -372,39 +362,14 @@ public class Agent implements Steppable { //, Stoppable {
 	
 	public double harvest(double resourceLevel, double energyLevel, double harvestTarget) {
 		
-		// TODO: !!!!! harvestTarget should be agent's decided consumption... either per ADICO, or if rejected in earlier time steps, some overridden consumption level.
+		double _harvested = 0;										// the amount that will ultimately be harvested (or not) by the agent.
+		double _remaining = resourceLevel - harvestTarget;			// pro-active projection of what remains if harvest happens. 
 		
-		double _harvested = 0;  // the amount that was ultimately harvested (or not) by the agent.
-		// compute the expected remaining if a harvest was conducted.
-		//double _remaining = FuzzyDRController.commons.getResourceLevel() - this.energyConsumption;
-		//double _remaining = resourceLevel - this.energyConsumption;
-		double _remaining = resourceLevel - harvestTarget;
-				
-		//DEBUG: System.out.println("The expected remaining resources if Agent harvests is: " + _remaining);
-		
-		// evaluate if harvest if possible (expected remaining is positive quantity), and update agent and commons
-		//if (FuzzyDRController.commons.getResourceLevel() > 0) {
-		
-		
-		// TODO: here's where we should invoke the fuzzy evaluation and navigate rest of the harvesting decision based on outcomes.
-		
-		
-		if (_remaining > 0) {      // implies that after harvest, the commons is not totally depleted after harvesting what is prescribed by the ADICO
+		if (_remaining > 0) {      	// implies that after proposed harvest, the commons is not totally depleted.
 			
-			// TODO:  might need several more nested if's to invoke fuzzy evaluation for how much to harvest, vs only if can't get target
-		
-			// decrement the commons by the successful harvest.
-			//FuzzyDRController.commons.setResourceLevel(FuzzyDRController.commons.getResourceLevel() - this.energyConsumption);
-			//FuzzyDRController.commons.setResourceLevel(_remaining);
-			
-			//fuzzyDR.commons.setResourceLevel(_remaining);
+			_harvested = harvestTarget;
 			
 			// update Agent's energy levels by the successful harvest.
-			//double _energyGain = this.getEnergy() + this.energyConsumption; 
-			//double _energyGain = this.getEnergy() + harvestTarget;   
-			//this.setEnergy(_energyGain);
-			
-			_harvested = harvestTarget;  //TODO: note that this just means we can harvest according to the ADICO, but not necessarily what is NEEDED.
 			updateEnergyFromHarvest(this.energy, _harvested);  // update Agent's energy level from whatever they were able to harvest.
 			
 			// return the remaining resource level after the successful harvest to update the pool resource level.
@@ -412,124 +377,175 @@ public class Agent implements Steppable { //, Stoppable {
 			return _remaining;
 			
 		} else {
-			
-			_remaining = resourceLevel;   // implies that if the agent's ADICO amount to harvest is not available, this agent is selfish and takes all that remains.
-			
+			_remaining = resourceLevel;   	// implies that if the agent's ADICO amount to harvest is not available, this agent is selfish and takes all that remains.
 			//DEBUG: System.out.println("... Decision to *** NOT *** harvest. Not enough remaining resources.");
 			return _remaining;
 		}
 	}
 	
-	public double calcAvgNeighborEnergy() {
+    /**
+     * FIS evaluation for delta parameter (internal) and return agreement index [0, 1] with respect to delta_i. 
+     * @param selfEnergy
+     * @param consumuptionAbove
+     * @return
+     */
+    public double evaluateDelta_i(double selfEnergy, double consumuptionAbove) {
+    	DEBUG: System.out.println("AgentID: " + this.agentID + " is running evalauteDelta_i with arguments selfEnergy: " + selfEnergy + ", consumptionAbove: " + consumuptionAbove + ".");
+    	diFIS_in_selfEnergy.setValue(selfEnergy);
+    	diFIS_in_selfConsumption.setValue(consumuptionAbove);
+    	fb_delta_i.evaluate();
+    	
+    	diFIS_out_agreement = fb_delta_i.getVariable("delta_i");
+    	
+    	DEBUG: System.out.println("... the resulting evaluation is: " + diFIS_out_agreement.getValue() + ".");
+    	
+    	//DEBUG: JFuzzyChart.get().chart(diFIS_out_agreement, diFIS_out_agreement.getDefuzzifier(), true);
+    	//fb_delta_i.getVariable("delta_i").chartDefuzzifier(true);
+    	
+    	return diFIS_out_agreement.getValue();
+    }
+    
+    /**
+     * FIS evaluation for delta parameter (external) and return agreement index [0, 1] with respect to delta_e.
+     * @param relativeState
+     * @param actionConsensus
+     * @return
+     */
+    public double evaluateDelta_e(double relativeState, double actionConsensus) {
+        deFIS_in_relativeState.setValue(relativeState);
+     	deFIS_in_actionConsensus.setValue(actionConsensus);
+     	fb_delta_e.evaluate();
+     	return deFIS_out_agreement.getValue();
+    }
+    
+    /**
+     * FIS evaluation for delta parameter (or-else) and return agreement index [0, 1] with respect to delta_o.
+     * @param expectedImpact
+     * @param sanctionRisk
+     * @return
+     */
+    public double evaluateDelta_o(double expectedImpact, double sanctionRisk) {
+    	doFIS_in_expectedImpact.setValue(expectedImpact);;
+     	doFIS_in_sanctionRisk.setValue(sanctionRisk);;
+     	fb_delta_o.evaluate();
+     	return doFIS_out_agreement.getValue();
+    }
+    
+    /**
+     * Fuzzy Tree for FIS evaluation for an overall delta parameter (internal + external + or-else) and return agreement index [0, 1] to be used to approximate p(obey).
+     * @param delta_i
+     * @param delta_e
+     * @param delta_o
+     * @return
+     */
+    public double evaluateDelta_tree(double delta_i, double delta_e, double delta_o) {
+    	dtreeFIS_in_delta_i.setValue(delta_i);;
+     	dtreeFIS_in_delta_e.setValue(delta_e);;
+     	dtreeFIS_in_delta_o.setValue(delta_o);;
+     	fb_delta_tree.evaluate();
+     	return dtreeFIS_out_agreement.getValue();
+    }
+    
+    /**
+     * Initiate fuzzy deontic reasoning for given agent, evaluating compliance with institutions based on delta parameter-specific fuzzy inference systems.
+     */
+    public double runFuzzyDR(SimState state) {
+    	FuzzyDRController fuzzyDR = (FuzzyDRController) state;
+    	
+    	double _resourceLevel = fuzzyDR.commons.getResourceLevel();
+    	double _remaining = 0;
+    	
+    	double _di;
+    	double _de;
+    	double _do;
+    	double _pObey;
+    	
+    	// delta internal parameters.
+    	double _energy = this.energy;		// as-is on range [0, 100].
+    	double _consumptionAbove;			// should reflect how much in excess of prescribed ADICO amount.
+    	double _temp = this.consumptionTarget - fuzzyDR.adico_1.getI_quantity();		// difference between agent consumption target and the institution prescription.
+    	
+    	if ( _temp >= 0) {
+    		_consumptionAbove = _temp;		// difference is positive with agent consumption target matching or exceeding institution prescription.  
+    	} else {
+    		_consumptionAbove = 0;			// in case where consumption is below what is specified by the institution, return a 0.
+    	}
+    	DEBUG: System.out.println("... estimating second delta_i paramter for consumption-above. _temp = " + _temp + ", _consumptionAbove =" + _consumptionAbove + ".");
+    	
+    	// delta external parameters.
+    	double _relativeState;  			// logic needs to go here to compute what I mean by relative-state.
+    	double _actionConsensus; 			// logic needs to go here to compute what I mean by action-consensus.
+    	
+    	// delta or-else parameters.
+    	double _expectedImpact; 			// logic needs to go here to compute what I mean by expected-impact of sanctions.
+    	double _sanctionRisk;				// logic needs to go here to compute what I mean by sanction-risk.
+    	
+    	DEBUG: System.out.println("running delta_i evaluation using arguments _energy: " + _energy + ", and _consumptionAbove" + _consumptionAbove + ".");
+    	_di = evaluateDelta_i(_energy, _consumptionAbove);
+    	DEBUG: System.out.println("... running fuzzyDR: AgentID:" + this.getAgentID() + ", and just evaluated delta_i, resulting in an agreement index of: " + _di + ".");
+    	//_de = evaluateDelta_e(_relativeState, _actionConsensus);
+    	//_do = evaluateDelta_o(_expectedImpact, _sanctionRisk);
+    	//_pObey = evaluateDelta_tree(_di, _de, _do);
+    	
+    	// temporary assignment of p(obey) as a simple function of delta internal.
+    	DEBUG: _pObey = _di;
+    	DEBUG: System.out.println("... continuing in fuzzyDR, resulting p(obey) is : " + _pObey + ".");
+    	
+    	this.setAgreeemnt_institution(_pObey);
+    	DEBUG: System.out.println("... institutional agreement set to p(obey), verifying with: " + this.getAgreeemnt_institution() + ", which should match p(obey).");
+    	DEBUG: System.out.println("... running action() to determine obey or break based on chance roll from the localRNG.");
+    	_remaining = action(state, this.getAgreeemnt_institution(), _resourceLevel);
+    	
+    	return _remaining;
+    }
+	
+	public double action(SimState state, double pObey, double resourceLevel) {
+		FuzzyDRController fuzzyDR = (FuzzyDRController) state;
 		
-		double _sum = 0;
-		double _avg = 0;
+		double _remaining = 0;
+		double _chance = this.localRNG.nextDouble();
 		
-		for (Agent a : this.neighbors) {
-			_sum += a.getEnergy();
+		if (_chance < pObey) {
+			// obey.
+			
+			// reset the consumption target to the institution.
+			this.setConsumptionTarget(fuzzyDR.adico_1.getI_quantity());
+			DEBUG: System.out.println("... ... pObey() is: " + pObey);
+			_remaining = harvest(resourceLevel, this.energy, this.consumptionTarget);		// maintain current action policy for consumption levels.
+			DEBUG: System.out.println("... ... running fuzzyDR: AgentID:" + this.getAgentID() + ", with p(obey): " + this.getAgreeemnt_institution() + ", drew chance: " + _chance + ", resulting with decicion to 'OBEY' and maintain consumption of " + this.getConsumptionTarget() + ".");
+		} else {
+			// break.
+			
+			innovateNewAction();		// determine a new consumption target and update the agent's consumption target field.
+			_remaining = harvest(resourceLevel, this.energy, this.getConsumptionTarget());			// innovate new action policy for consumption levels.
+			DEBUG: System.out.println("... ... running fuzzyDR: AgentID:" + this.getAgentID() + ", with p(obey): " + this.getAgreeemnt_institution() + ", drew chance: " + _chance + ", resulting with decicion to 'BREAK' and innovated a new action for new consumption of " + this.getConsumptionTarget() + ".");
 		}
-		
-		_avg = _sum / this.neighbors.size();
-		return _avg;
+		return _remaining;
 	}
 	
-	
-	public void assessDeltaParameters() {
-		
-		//TODO: run method here for internal delta calculation
-		
-		//TODO: run method here for external delta calculation
-		
-		//TODO: include state variables for delta parameters?
-		
-		
-	}
-	
-	//TODO: either make this method evaluate agreement for every delta parameter, or create 3 separate methods.
 	/**
-	 * Evaluate fuzzy rules and obtain output.
-	 * @param selfEnergy
-	 * @param neighborEnergy
-	 * @return
+	 * In the case of agents breaking with institution, determines a new action policy and updates the agent's consumption target field.
 	 */
-    public double evaluateAgreement(double selfEnergy, double neighborEnergy) {
-        selfEnergyVar.setValue(selfEnergy);
-        neighborEnergyVar.setValue(neighborEnergy);
-        functionBlock.evaluate();
-        return agreementVar.getValue();
-    }
-	
-    // TODO: pull in the input parameters and convert them appropriately for feeding into the delta internal parameter FIS. 
-    public double evaluateDelta_i() {
-    	double _agreement = 0;
-    	
-    	return _agreement;
-    }
-    
-    // TODO: pull in the input parameters and convert them appropriately for feeding into the delta external parameter FIS.
-    public double evaluateDelta_e() {
-    	double _agreement = 0;
-    	
-    	return _agreement;
-    }
-    
-    // TODO: pull in the input parameters and convert them appropriately for feeding into the delta orElse parameter FIS.
-    public double evaluateDelta_o() {
-    	double _agreement = 0;
-    	
-    	return _agreement;
-    }
-    
- // TODO: pull in the input parameters and convert them appropriately for feeding into the delta orElse parameter FIS.
-    public double evaluateDelta_tree() {
-    	double _agreement = 0;
-    	
-    	return _agreement;
-    }
-    
-	public double evaluateCompliance() {
+	public void innovateNewAction() {
+		// TODO:  In case the agent decides to break with institution... need logic here to develop new rules for them to follow. This may require passed arguments for better heuristics or decision logic.
 		
-		//TODO: invoke fuzzyDR here and draw from current state deltas
-		// something about looking at the current energy level, and then seeing if harvest via ADICO is 'good' or 'not'
+		double _newConsumptionTarget = 0;
+		//double _newConsumptionTarget = this.consumptionTarget;		// for now, this is a placeholder.
+		// TODO: is the new action innovation specific to scenario? w/ case statements here again? e.g., if in dire straits, catch up and consume as much as possible.
+		// < insert new logic here to develop new consumption target... nothing fancy, e.g., imitate, fill exact need, etc. >
+		
+		// THIS USE CASE IS SPECIFIC TO SCENARIO 2 --- for other scenarios, like Scenario 1, we might want to *reduce* consumption target. 
+		double _needsGap = 100 - this.getEnergy();
+		// linear function for consumption target based on the needs gap, where _newConsumptionTarget equals 10 when _needsGap is 100, and decreases to 2 when _needsGap is 0.
+		_newConsumptionTarget = 0.08 * _needsGap + 2;
+		// ensure that _newConsumptionTarget does not exceed 10
+		_newConsumptionTarget = Math.min(_newConsumptionTarget, 10);
 		
 		
-		// TODO:  need to normalize the energy levels into 10.
-		double _selfEnergy = (this.getEnergy()) / Config.agentInitialEnergy;    // as a percentage of agent energy max.
-		double _neighborEnergy = (this.calcAvgNeighborEnergy()) / Config.agentInitialEnergy;  // as a percentage of agent energy max.
+		DEBUG: System.out.println("... ... ... given institution BREAK, AgentID:" + this.getAgentID() + " has a needs gap of " + _needsGap + ", and innovated a new action policy, updating the old consumption target of : " + this.consumptionTarget + " with new target of : " + _newConsumptionTarget + ".");
 		
-		//DEBUG: System.out.println("_selfEnergy = " + _selfEnergy + ", _neighborEnergy" + _neighborEnergy);
-		
-		//fis.setVariable("selfEnergy", _selfEnergy);
-		//fis.setVariable("neighborEnergy", _neighborEnergy);
-		//fis.evaluate();
-		
-		//double _agreement = agreementVar.getValue();
-		//double _agreement = fis.getVariable("agreement").getValue();
-		//return _agreement;
-		
-		double _agreement = evaluateAgreement(_selfEnergy, _neighborEnergy);
-		return _agreement;
-		
-		
-		// TODO:  this is the roll against agreementValue logic here.... !!!
-		
-		// TODO: !!!!!!!!!!!!!!!!!!!!!!!!! roll and now act 
-		// can call newRuleGenertaion() from here maybe if comes up as non-comply.
-		
-	}
-	
-	
-	public void decideAction() {
-		
-		// TODO: put in logic here that translates agreement levels to harvest levels (e.g., imitation, to meet need exactly for survival, etc)
-		// or... it could be new action innovation. Does not need to be fancy. Maybe just 'imitate' or 'exactly fufill need.'
-	}
-	
-	
-	public void newRuleGeneration() {
-		
-		// TODO:  In case the agent decides to break with institution... need logic here to develop new rules for them to follow
-		
+		this.setConsumptionTarget(_newConsumptionTarget);
+		//return this.getConsumptionTarget();
 	}
 	
 	
@@ -579,6 +595,19 @@ public class Agent implements Steppable { //, Stoppable {
     }
     */
 	
+	public double calcAvgNeighborEnergy() {
+		
+		double _sum = 0;
+		double _avg = 0;
+		
+		for (Agent a : this.neighbors) {
+			_sum += a.getEnergy();
+		}
+		
+		_avg = _sum / this.neighbors.size();
+		return _avg;
+	}
+	
 	/**
 	 * For dynamic adjustment of fuzzy membership sets during simulation runtime.
 	 * @param x1
@@ -594,7 +623,7 @@ public class Agent implements Steppable { //, Stoppable {
     	
     	//DEBUG: JFuzzyChart.get().chart(functionBlock);
     	
-    	LinguisticTerm low = selfEnergyVar.getLinguisticTerm("low");
+    	LinguisticTerm low = diFIS_in_selfEnergy.getLinguisticTerm("low");
         
         MembershipFunctionPieceWiseLinear mf = (MembershipFunctionPieceWiseLinear) low.getMembershipFunction();
         

@@ -2,28 +2,35 @@ FUNCTION_BLOCK delta_internal
 
 VAR_INPUT
     selfEnergy : REAL;
+    	RANGE := (0 .. 100);
     selfConsumption : REAL;
+    	RANGE := (0 .. 10);
 END_VAR
 
 VAR_OUTPUT
     delta_i : REAL;
+    	RANGE := (0 .. 1);
 END_VAR
 
 FUZZIFY selfEnergy
-    TERM low := (0, 1) (3, 1) (5, 0);
-    TERM ok := (3, 0) (5, 1) (7, 0);
-    TERM great := (5, 0) (7, 1) (10, 1);
+    //TERM surplus := sigm 40 70;
+    //TERM sufficient := gbell 20 40 50;
+    //TERM poor := sigm -40 30;
+    TERM surplus := (50, 0) (100, 1);
+    TERM sufficient := trian 25 50 75;
+    TERM poor := (0, 1) (50, 0);
 END_FUZZIFY
 
 FUZZIFY selfConsumption
-    TERM low := (0, 0) (3, 1) (5, 0);
-    TERM ok := (3, 0) (5, 1) (7, 0);
-    TERM great := (7, 0) (9, 1) (10, 1);
+    TERM compliant := (0, 1) (8, 0);
+    TERM excessive := (2, 0) (10, 1);
 END_FUZZIFY
 
 DEFUZZIFY delta_i
-    TERM agree := (0.5, 0) (1, 1);
-    TERM disagree := (0, 1) (0.5, 1);
+    //TERM embrace := sigm 6 5.5;
+    //TERM reject := sigm -6 4.5;
+    TERM embrace := (0.4, 0) (0.8, 1) (1, 1);
+    TERM reject := (0, 1) (0.2, 1) (0.6, 0);
     METHOD: COG;
 END_DEFUZZIFY
 
@@ -32,9 +39,10 @@ RULEBLOCK No1
 	ACT : MIN;	// Use 'min' activation method
 	ACCU : MAX;	// Use 'max' accumulation method
 
-	RULE 1: IF selfEnergy IS low THEN delta_i IS disagree;
-	RULE 2: IF selfEnergy IS great THEN delta_i IS agree;
-	RULE 3: IF selfEnergy IS ok THEN delta_i IS agree;
+	RULE 1: IF selfEnergy IS surplus AND selfConsumption IS compliant THEN delta_i IS embrace;
+	RULE 2: IF selfEnergy IS surplus AND selfConsumption IS excessive THEN delta_i IS reject;
+	RULE 3: IF selfEnergy IS sufficient THEN delta_i IS embrace;
+	RULE 4: IF selfEnergy IS poor THEN delta_i IS reject;
 
 END_RULEBLOCK
 

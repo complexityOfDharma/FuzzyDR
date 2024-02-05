@@ -17,7 +17,7 @@ public class Config {
     
     // TODO: change this energy loss per step according to some ENUM specification of agent types (e.g., selfish, cooperative, etc.).
     public static int agentEnergyLossPerStep = 1;
-    public final static int consumptionLevel = 1;
+    public final static double consumptionLevel = 1;
     
     public static int resourceCarryingCapacity = 1200;
     public final static double commonsRegrowthRate = 0.3;
@@ -38,12 +38,13 @@ public class Config {
     public static final String delta_tree_FCLPath = "/delta_tree.fcl";   			// specified with leading '/' for path absolute relative to the classpath root.
     
     // experiment scenarios
-    public static boolean isExperimentRun = true;		// if true, we are in experiment conditions and identified agents will be activated with fuzzyDR, if false, assume control case and scenario run with no fuzzyDR.
+    public static boolean isScenarioRun = true;					// if true, trigger experiment conditions parameterization for selected Scenario. If false, model runs to termination with no Scenario parameterization.
+    public static boolean isExperimentalControlRun = false;		// if true, Control case for Scenario Run, with test agents parameterized for Scenario, but no fuzzyDR Agent's Step(). If false, active fuzzyDR for test agents.
     
     // NOTE: to run custom scenarios, make isFuzzyDRforALL = false, and then specify what scenario experiment you want to test with scenarioID.
     
     // ------- !!! Scenario descriptions. -------
-    // ('0') - no scenario
+    // ('0') - no scenario - default parameterization
     // ('1') - Scenario 1 - delta_i: 'maintain advantage'
     // ('2') - Scenario 2 - delta_i: 'desperation'
     // ('3') - Scenario 3 - delta_e: 
@@ -52,12 +53,13 @@ public class Config {
 	// ('6') - Scenario 6 - delta_o:
 	// ('7') - Scenario 7 - delta_i + delta_e: 
 	// ('8') - Scenario 8 - delta_i + delta_e + delta_o: 
-    public static final int scenarioID = 1;			// specify the kind of Agent 0 customization you want to do experiments with.
+    // !!! TODO: is there a scenario run exclusively in overlapping regions of membership sets.
+    public static final int scenarioID = 2;			// specify the kind of Agent 0 customization you want to do experiments with.
     
     
     // batch run parameters
     public static int batchRunID = 0;
-    public static boolean isBatchRun = true;
+    public static boolean isBatchRun = false;
     //public static int[] resourceCarryingCapacityRange = new int[] { 5000, 10000, 1000 };	// { start, stop, step size }.
     //public static double[] commonsRegrowthRateRange = new double[] { 0.05, 0.1, 0.05 };		// { start, stop, step size }.
     //public static int[] consumptionLevelRange = new int[] { 1, 10, 5 };						// { start, stop, step size }.
