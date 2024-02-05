@@ -12,6 +12,7 @@ package edu.gmu.fuzzydr.controller;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,7 +62,7 @@ public class FuzzyDRController extends SimState{
     
     private SimulationLogger logger;
     public static List<String> logEntries = new ArrayList<>();
-    
+    private SimulationLogger popLogger;
     
 	 /** Default constructor. */
     public FuzzyDRController() { 
@@ -88,7 +89,16 @@ public class FuzzyDRController extends SimState{
     	initialize();
     	
     	// setup the Logger.
-    	this.logger = new SimulationLogger("src/main/resources/sim_log_singleRun.csv");		// single run.
+    	//this.logger = new SimulationLogger("src/main/resources/sim_log_singleRun.csv");		// single run, agent-level stats.
+    	//this.popLogger = new SimulationLogger("src/main/resources/sim_log_popStats.csv");	// single run, population-level stats.
+    	
+    	// For agent-level logs
+    	this.logger = new SimulationLogger("src/main/resources/sim_log_singleRun.csv",
+    	    "Run, Step, AgentID, Energy-Level, Common-Pool-Levels, agent0_delta_i, agent0_delta_e, agent0_delta_o, agent0_agreement");
+
+    	// For population-level statistics
+    	this.popLogger = new SimulationLogger("src/main/resources/sim_log_popStats.csv",
+    	    "Run, Step, Avg_Energy, Avg_Agreement");
     }
     
     /**
@@ -116,9 +126,26 @@ public class FuzzyDRController extends SimState{
     	
     	// setup the Logger.
     	if (Config.isBatchRun) {
-    		this.logger = new SimulationLogger(logFilename);		// dynamic filenames for batched runs.
+    		//this.logger = new SimulationLogger(logFilename);									// dynamic filenames for batched runs, agent-level stats.
+    		//this.popLogger = new SimulationLogger("src/main/resources/sim_log_popStats.csv");	// single run, population-level stats.
+    		
+    		// For agent-level logs
+        	this.logger = new SimulationLogger(logFilename,
+        	    "Run, Step, AgentID, Energy-Level, Common-Pool-Levels, agent0_delta_i, agent0_delta_e, agent0_delta_o, agent0_agreement");
+
+        	// For population-level statistics
+        	this.popLogger = new SimulationLogger("src/main/resources/sim_log_popStats.csv",
+        	    "Run, Step, Avg_Energy, Avg_Agreement");
     	} else {
-    		this.logger = new SimulationLogger("src/main/resources/sim_log_singleRun.csv");		// single run.
+    		//this.logger = new SimulationLogger("src/main/resources/sim_log_singleRun.csv");		// single run, agent-level stats.
+    		//this.popLogger = new SimulationLogger("src/main/resources/sim_log_popStats.csv");	// single run, population-level stats.
+    		// For agent-level logs
+        	this.logger = new SimulationLogger("src/main/resources/sim_log_singleRun.csv",
+        	    "Run, Step, AgentID, Energy-Level, Common-Pool-Levels, agent0_delta_i, agent0_delta_e, agent0_delta_o, agent0_agreement");
+
+        	// For population-level statistics
+        	this.popLogger = new SimulationLogger("src/main/resources/sim_log_popStats.csv",
+        	    "Run, Step, Avg_Energy, Avg_Agreement");
     	}
     
     }
@@ -329,6 +356,9 @@ public class FuzzyDRController extends SimState{
 				DEBUG: System.out.println("End of time step " + schedule.getSteps() + ": populationRemaining = " + _remainingAgents + " : countExpired = " + _expired);
 				DEBUG: System.out.println("... for remaining population, avgerage energy = " + _avgEnergy + ", and average institutional agreement = " + _avgAgreement + "\n");
 				
+				String popStatsEntry = Config.batchRunID + "," + schedule.getSteps() + "," + _avgEnergy + "," + _avgAgreement;
+			    popLogger.logEntries(Collections.singletonList(popStatsEntry));
+			    
 				if (_expired == Config.agentPopulation || schedule.getTime() >= Config.terminationStepCount) {
 				    System.out.println("");
 				    System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");

@@ -278,12 +278,10 @@ public class Agent implements Steppable { //, Stoppable {
 	public void step(SimState state) {
 		FuzzyDRController fuzzyDR = (FuzzyDRController) state;
 		
-		DEBUG: if (this.agentID==0) { System.out.println("Running step() for this time step."); }
-		
 		// decrement agent energy level for this time step.
-		DEBUG: if (this.agentID==0) { System.out.println("Decrementing agent energy levels. Starting energy is: " + this.getEnergy()); }
+		//DEBUG: if (this.agentID==0) { System.out.println("Decrementing agent energy levels. Starting energy is: " + this.getEnergy()); }
 		decrementEnergyLevels(this.energy);
-		DEBUG: if (this.agentID==0) { System.out.println("... and ending energy is: " + this.getEnergy()); }
+		//DEBUG: if (this.agentID==0) { System.out.println("... and ending energy is: " + this.getEnergy()); }
 		
 		// ------- !!! Harvest and update self-state and world-state of common pool. -------
 		double _resourceLevel = fuzzyDR.commons.getResourceLevel();			// resource pool level for current simulation state.
@@ -291,30 +289,29 @@ public class Agent implements Steppable { //, Stoppable {
 		
 		if (Config.isScenarioRun) {
 			// running a specified experiment scenario.
-			DEBUG: if (this.agentID==0) { System.out.println("Starting conditional logic for this experiment scenario run."); }
+			//DEBUG: if (this.agentID==0) { System.out.println("Starting conditional logic for this experiment scenario run."); }
 			if (Config.isExperimentalControlRun) {
 				// running active fuzzyDR agents, but without the fuzzyDR processes (no delta parameter checks) and assuming uniform compliance with institution.
 				_remaining = harvest(_resourceLevel, this.energy, this.getConsumptionTarget());
-				DEBUG: if (this.agentID==0) { System.out.println("... Experimental control run is TRUE --- harvest completed without fuzzyDR methods: remaining pool resources of " + _remaining + "."); }
+				//DEBUG: if (this.agentID==0) { System.out.println("... Experimental control run is TRUE --- harvest completed without fuzzyDR methods: remaining pool resources of " + _remaining + "."); }
 			} else {
 				// running active fuzzyDR agents with all fuzzyDR processes (includes all delta parameter checks and resulting action decisions).
-				DEBUG: if (this.agentID==0) { System.out.println("... Experimental control run is FALSE --- full fuzzyDR methods for harvest actions by test agents."); }
+				//DEBUG: if (this.agentID==0) { System.out.println("... Experimental control run is FALSE --- full fuzzyDR methods for harvest actions by test agents."); }
 				if ((Config.isFuzzyDRforALL) || (this.isFuzzyDRActivated())) {
 					// all active fuzzyDR agents should initiate the fuzzyDR process.
 					_remaining = runFuzzyDR(state);		// all fuzzyDR processes, and to include running harvest.
-					DEBUG: if (this.agentID==0) { System.out.println("... ... fuzzyDR is active for this agent --- full fuzzyDR methods for harvest: remaining pool resources of " + _remaining + "."); }
+					//DEBUG: if (this.agentID==0) { System.out.println("... ... fuzzyDR is active for this agent --- full fuzzyDR methods for harvest: remaining pool resources of " + _remaining + "."); }
 				} else {	// this is for rest of population and not test agents or other agents specified for active fuzzyDR.
 					// for the fuzzyDR experiment runs, the rest of the population should follow their consumption targets specified by the scenario parameterization.
 					_remaining = harvest(_resourceLevel, this.energy, this.getConsumptionTarget());
-					DEBUG: if (this.agentID==0) { System.out.println("... ... !!! THIS SHOULD NOT COME UP, with Agent_0 having isFuzzyDRActivated, so should not get here."); }
+					//DEBUG: if (this.agentID==0) { System.out.println("... ... !!! THIS SHOULD NOT COME UP, with Agent_0 having isFuzzyDRActivated, so should not get here."); }
 				}
 			}
 		} else {
 			// not running a specified experiment scenario, and this should follow institution prescriptions.
 			_remaining = harvest(_resourceLevel, this.energy, this.getConsumptionTarget());
-			DEBUG: if (this.agentID==0) { System.out.println("Starting conditional logic for non-experiment scenario run."); }
+			//DEBUG: if (this.agentID==0) { System.out.println("Starting conditional logic for non-experiment scenario run."); }
 		}
-		
 		
 		/*
 		// based on experiment runs with or without fuzzyDR (w.r.t. fuzzyDR for all agents, or just this instance).
@@ -363,11 +360,19 @@ public class Agent implements Steppable { //, Stoppable {
 	public double harvest(double resourceLevel, double energyLevel, double harvestTarget) {
 		
 		double _harvested = 0;										// the amount that will ultimately be harvested (or not) by the agent.
-		double _remaining = resourceLevel - harvestTarget;			// pro-active projection of what remains if harvest happens. 
+		double _target = harvestTarget;								// default target to input harvest target (prior to check on energy level and max limit).
+		
+		if ((this.getEnergy() + _target) > Config.agentInitialEnergy) {		// check for if gap between current state and energy max is more than harvestTarget.
+			_target = Config.agentInitialEnergy - this.getEnergy();			// gap is smaller than harvestTarget, so only harvest enough to max out.
+		} else {
+			_target = harvestTarget;
+		}
+		
+		double _remaining = resourceLevel - _target;			// pro-active projection of what remains if harvest happens. 
 		
 		if (_remaining > 0) {      	// implies that after proposed harvest, the commons is not totally depleted.
 			
-			_harvested = harvestTarget;
+			_harvested = _target;
 			
 			// update Agent's energy levels by the successful harvest.
 			updateEnergyFromHarvest(this.energy, _harvested);  // update Agent's energy level from whatever they were able to harvest.
@@ -396,6 +401,7 @@ public class Agent implements Steppable { //, Stoppable {
     	fb_delta_i.evaluate();
     	
     	diFIS_out_agreement = fb_delta_i.getVariable("delta_i");
+    	
     	
     	DEBUG: System.out.println("... the resulting evaluation is: " + diFIS_out_agreement.getValue() + ".");
     	
@@ -452,13 +458,12 @@ public class Agent implements Steppable { //, Stoppable {
     public double runFuzzyDR(SimState state) {
     	FuzzyDRController fuzzyDR = (FuzzyDRController) state;
     	
+    	DEBUG: System.out.println("AgentID:" + this.getAgentID() + ", now running fuzzyDR.");
+    	
     	double _resourceLevel = fuzzyDR.commons.getResourceLevel();
     	double _remaining = 0;
     	
-    	double _di;
-    	double _de;
-    	double _do;
-    	double _pObey;
+    	double _pObey;  // !!! TODO: remove this and just operate directly with agreement_institution.
     	
     	// delta internal parameters.
     	double _energy = this.energy;		// as-is on range [0, 100].
@@ -470,7 +475,7 @@ public class Agent implements Steppable { //, Stoppable {
     	} else {
     		_consumptionAbove = 0;			// in case where consumption is below what is specified by the institution, return a 0.
     	}
-    	DEBUG: System.out.println("... estimating second delta_i paramter for consumption-above. _temp = " + _temp + ", _consumptionAbove =" + _consumptionAbove + ".");
+    	//DEBUG: System.out.println("... estimating second delta_i paramter for consumption-above. _temp = " + _temp + ", _consumptionAbove =" + _consumptionAbove + ".");
     	
     	// delta external parameters.
     	double _relativeState;  			// logic needs to go here to compute what I mean by relative-state.
@@ -480,20 +485,22 @@ public class Agent implements Steppable { //, Stoppable {
     	double _expectedImpact; 			// logic needs to go here to compute what I mean by expected-impact of sanctions.
     	double _sanctionRisk;				// logic needs to go here to compute what I mean by sanction-risk.
     	
-    	DEBUG: System.out.println("running delta_i evaluation using arguments _energy: " + _energy + ", and _consumptionAbove" + _consumptionAbove + ".");
-    	_di = evaluateDelta_i(_energy, _consumptionAbove);
-    	DEBUG: System.out.println("... running fuzzyDR: AgentID:" + this.getAgentID() + ", and just evaluated delta_i, resulting in an agreement index of: " + _di + ".");
-    	//_de = evaluateDelta_e(_relativeState, _actionConsensus);
-    	//_do = evaluateDelta_o(_expectedImpact, _sanctionRisk);
+    	//DEBUG: System.out.println("running delta_i evaluation using arguments _energy: " + _energy + ", and _consumptionAbove" + _consumptionAbove + ".");
+    	this.setAgreement_delta_i(evaluateDelta_i(_energy, _consumptionAbove));
+    	//DEBUG: System.out.println("... running fuzzyDR: AgentID:" + this.getAgentID() + ", and just evaluated delta_i, resulting in an agreement index of: " + _di + ".");
+    	
+    	// TODO: activate the following to complete the model.
+    	//this.setAgreement_delta_e(evaluateDelta_e(_relativeState, _actionConsensus));
+    	//this.setAgreement_delta_o(evaluateDelta_o(_expectedImpact, _sanctionRisk));
     	//_pObey = evaluateDelta_tree(_di, _de, _do);
     	
     	// temporary assignment of p(obey) as a simple function of delta internal.
-    	DEBUG: _pObey = _di;
-    	DEBUG: System.out.println("... continuing in fuzzyDR, resulting p(obey) is : " + _pObey + ".");
+    	DEBUG: _pObey = this.getAgreement_delta_i();	// --- !!! This should be the result of evaluate_deltaTree. ---
+    	//DEBUG: System.out.println("... continuing in fuzzyDR, resulting p(obey) is : " + _pObey + ".");
     	
     	this.setAgreeemnt_institution(_pObey);
-    	DEBUG: System.out.println("... institutional agreement set to p(obey), verifying with: " + this.getAgreeemnt_institution() + ", which should match p(obey).");
-    	DEBUG: System.out.println("... running action() to determine obey or break based on chance roll from the localRNG.");
+    	//DEBUG: System.out.println("... institutional agreement set to p(obey), verifying with: " + this.getAgreeemnt_institution() + ", which should match p(obey).");
+    	//DEBUG: System.out.println("... running action() to determine obey or break based on chance roll from the localRNG.");
     	_remaining = action(state, this.getAgreeemnt_institution(), _resourceLevel);
     	
     	return _remaining;
@@ -510,7 +517,7 @@ public class Agent implements Steppable { //, Stoppable {
 			
 			// reset the consumption target to the institution.
 			this.setConsumptionTarget(fuzzyDR.adico_1.getI_quantity());
-			DEBUG: System.out.println("... ... pObey() is: " + pObey);
+			//DEBUG: System.out.println("... ... pObey() is: " + pObey);
 			_remaining = harvest(resourceLevel, this.energy, this.consumptionTarget);		// maintain current action policy for consumption levels.
 			DEBUG: System.out.println("... ... running fuzzyDR: AgentID:" + this.getAgentID() + ", with p(obey): " + this.getAgreeemnt_institution() + ", drew chance: " + _chance + ", resulting with decicion to 'OBEY' and maintain consumption of " + this.getConsumptionTarget() + ".");
 		} else {
@@ -542,7 +549,7 @@ public class Agent implements Steppable { //, Stoppable {
 		_newConsumptionTarget = Math.min(_newConsumptionTarget, 10);
 		
 		
-		DEBUG: System.out.println("... ... ... given institution BREAK, AgentID:" + this.getAgentID() + " has a needs gap of " + _needsGap + ", and innovated a new action policy, updating the old consumption target of : " + this.consumptionTarget + " with new target of : " + _newConsumptionTarget + ".");
+		//DEBUG: System.out.println("... ... ... given institution BREAK, AgentID:" + this.getAgentID() + " has a needs gap of " + _needsGap + ", and innovated a new action policy, updating the old consumption target of : " + this.consumptionTarget + " with new target of : " + _newConsumptionTarget + ".");
 		
 		this.setConsumptionTarget(_newConsumptionTarget);
 		//return this.getConsumptionTarget();
@@ -713,19 +720,25 @@ public class Agent implements Steppable { //, Stoppable {
 	    }
 	}
 
+	/**
+	 * Generate a log entry for the logger, following format for "Run, Step, AgentID, Energy-Level, Common-Pool-Levels, agent0_delta_i, agent0_delta_e, agent0_delta_o, agent0_agreement, pop_avg_agreement" 
+	 * @param state
+	 * @return
+	 */
 	public String generateLogEntry(SimState state) {
 		FuzzyDRController fuzzyDR = (FuzzyDRController) state;
 		
 		double e;
-		if (energy < 0) {
+		if (this.energy < 0) {
 			e = 0;
 		} else {
-			e = energy;
+			e = this.energy;
 		}
 		
-        //return fuzzyDR.schedule.getSteps() + "," + agentID + "," + e + "," + agreement;
+		//return fuzzyDR.schedule.getSteps() + "," + agentID + "," + e + "," + agreement;
         //return fuzzyDR.schedule.getSteps() + "," + getAgentID() + "," + e + "," + getAgreement();
-		return Config.batchRunID + "," + fuzzyDR.schedule.getSteps() + "," + agentID + "," + e + "," + fuzzyDR.commons.getResourceLevel();
+		return Config.batchRunID + "," + fuzzyDR.schedule.getSteps() + "," + agentID + "," + e + "," + fuzzyDR.commons.getResourceLevel() +
+				"," + this.getAgreement_delta_i() + "," + this.getAgreement_delta_e() + "," + this.getAgreement_delta_o() + "," + this.getAgreeemnt_institution();
     }
 	
 	

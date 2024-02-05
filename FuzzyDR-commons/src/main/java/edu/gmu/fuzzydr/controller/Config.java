@@ -19,11 +19,11 @@ public class Config {
     public static int agentEnergyLossPerStep = 1;
     public final static double consumptionLevel = 1;
     
-    public static int resourceCarryingCapacity = 1200;
+    public static int resourceCarryingCapacity = 1333;
     public final static double commonsRegrowthRate = 0.3;
     
     // w.r.t. small world network parameters
-    public final static int initNeighbors = 2;
+    public final static int initNeighbors = 3;
     public final static double rewiringProb = 0.05;  //0.8;
     
     // fuzzy logic
