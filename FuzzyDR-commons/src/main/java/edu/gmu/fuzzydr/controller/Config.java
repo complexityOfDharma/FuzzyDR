@@ -39,7 +39,7 @@ public class Config {
     
     // experiment scenarios
     public static boolean isScenarioRun = true;					// if true, trigger experiment conditions parameterization for selected Scenario. If false, model runs to termination with no Scenario parameterization.
-    public static boolean isExperimentalControlRun = false;		// if true, Control case for Scenario Run, with test agents parameterized for Scenario, but no fuzzyDR Agent's Step(). If false, active fuzzyDR for test agents.
+    public static boolean isExperimentalControlRun = true;		// if true, Control case for Scenario Run, with test agents parameterized for Scenario, but no fuzzyDR Agent's Step(). If false, active fuzzyDR for test agents.
     
     // NOTE: to run custom scenarios, make isFuzzyDRforALL = false, and then specify what scenario experiment you want to test with scenarioID.
     
@@ -54,7 +54,7 @@ public class Config {
 	// ('7') - Scenario 7 - delta_i + delta_e: 
 	// ('8') - Scenario 8 - delta_i + delta_e + delta_o: 
     // !!! TODO: is there a scenario run exclusively in overlapping regions of membership sets.
-    public static final int scenarioID = 2;			// specify the kind of Agent 0 customization you want to do experiments with.
+    public static final int scenarioID = 1;			// specify the kind of Agent 0 customization you want to do experiments with.
     
     
     // batch run parameters
