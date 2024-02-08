@@ -45,16 +45,17 @@ public class Config {
     
     // ------- !!! Scenario descriptions. -------
     // ('0') - no scenario - default parameterization
-    // ('1') - Scenario 1 - delta_i: 'maintain advantage'
-    // ('2') - Scenario 2 - delta_i: 'desperation'
-    // ('3') - Scenario 3 - delta_e: 
-    // ('4') - Scenario 4 - delta_e: 
+    // ('1') - Scenario 1 - delta_i: 'maintain status quo'
+    // ('2') - Scenario 2 - delta_i: 'dire straits'
+    // ('3') - Scenario 3 - delta_e: 'behind the pack'
+    // ('4') - Scenario 4 - delta_e: 'king of the hill'
     // ('5') - Scenario 5 - delta_o:
 	// ('6') - Scenario 6 - delta_o:
 	// ('7') - Scenario 7 - delta_i + delta_e: 
 	// ('8') - Scenario 8 - delta_i + delta_e + delta_o: 
+    // ('9') - Scenario 9 - delta_i + delta_e + delta_o for all agents: 'hello fuzzy world'
     // !!! TODO: is there a scenario run exclusively in overlapping regions of membership sets.
-    public static final int scenarioID = 1;			// specify the kind of Agent 0 customization you want to do experiments with.
+    public static final int scenarioID = 4;			// specify the kind of Agent 0 customization you want to do experiments with.
     
     
     // batch run parameters

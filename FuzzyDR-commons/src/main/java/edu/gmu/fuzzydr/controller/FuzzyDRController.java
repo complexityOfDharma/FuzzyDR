@@ -51,12 +51,8 @@ public class FuzzyDRController extends SimState{
 	//public static ADICO adico_1;  // TODO: move this to Agent class? maybe have each agent own an ADICO, and it get updated after fuzzyDR
 	public ADICO adico_1;  // TODO: move this to Agent class? maybe have each agent own an ADICO, and it get updated after fuzzyDR
 	
-    // *** now being defined in Config... can delete
-	//public static int agentPopulation = 1;
-    //public static int agentInitialEnergy = 10;
-    //public static int resourceCarryingCapacity = 10;
-    
-    public int countExpired = 0;    // agents who have expired due to no remaining energy, initialized to no deaths.
+	// population stats.
+	public int countExpired = 0;    // agents who have expired due to no remaining energy, initialized to no deaths.
     
     public XYSeries resourcePoolLevels;
     
@@ -83,7 +79,7 @@ public class FuzzyDRController extends SimState{
     	System.out.println("");
     	System.out.println("@author: Brant Horio, George Mason University, 2024");
     	System.out.println("");
-    	System.out.println("Starting simulation --- Scenario: " + Config.scenarioID);
+    	System.out.println("Starting simulation --- Scenario: " + Config.scenarioID + " --- is Control run?: " + Config.isExperimentalControlRun);
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
         
     	initialize();
@@ -119,7 +115,7 @@ public class FuzzyDRController extends SimState{
     	System.out.println("");
     	System.out.println("@author: Brant Horio, George Mason University, 2024");
     	System.out.println("");
-    	System.out.println("Starting simulation --- Scenario: " + Config.scenarioID);
+    	System.out.println("Starting simulation --- Scenario: " + Config.scenarioID + " --- is Control run?: " + Config.isExperimentalControlRun);
         System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
         
     	initialize();

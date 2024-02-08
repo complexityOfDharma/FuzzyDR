@@ -28,7 +28,7 @@ public class Resource implements Steppable{
 		// Resource is replenished by a logistic regrowth rule. Resources are decremented from the Agent class in their Step method.
 		regrowth(state);
 		
-		DEBUG: System.out.println("Harvest completed and regrowth. Remaining resources are: " + this.getResourceLevel() + "\n");
+		DEBUG: System.out.println("... harvest completed and regrowth calculated. New remaining resources are: " + this.getResourceLevel() + "\n");
 	}
 	
 	public void regrowth(SimState state) {
