@@ -574,25 +574,19 @@ public class Agent implements Steppable { //, Stoppable {
 	        	_pObey = this.getAgreement_delta_o();
 	        	break;
 	        case 7:
-	            // Scenario 7 - delta_i + delta_e: 
+	            // Scenario 7 - full fuzzyDR for complex scenario 1:
+	        	System.out.println("... running Scenario 7 fuzzyDR - complex scenario 1 - for agentID:" + this.getAgentID() + ".\n");
+	        	_pObey = complexDeltaParameterEvaluation(_energy, _consumptionAbove, _networkState, _actionConsensus, _expectedImpact, _sanctionRisk);
 	        	break;
 	        case 8:
-	            // Scenario 8 - delta_i + delta_e + delta_o: 
-	        	System.out.println("... running Scenario 8 fuzzyDR - delta (full fuzzy tree FIS with internal + external + or-else) for agentID:" + this.getAgentID() + ".\n");
-	        	_di = evaluateDelta_i(_energy, _consumptionAbove);
-	        	_de = evaluateDelta_e(_networkState, _actionConsensus);
-	        	_do = evaluateDelta_o(_expectedImpact, _sanctionRisk);
-	        	
-	        	_pObey = evaluateDelta_tree(_di, _de, _do);
+	            // Scenario 8 - full fuzzyDR for complex scenario 2: 
+	        	System.out.println("... running Scenario 8 fuzzyDR - complex scenario 2 - for agentID:" + this.getAgentID() + ".\n");
+	        	_pObey = complexDeltaParameterEvaluation(_energy, _consumptionAbove, _networkState, _actionConsensus, _expectedImpact, _sanctionRisk);
 	        	break;
 	        case 9:
-	        	// Scenario 9 - delta_i + delta_e + delta_o: 'hello fuzzy world' : fuzzyDR for all, all delta parameter methods.
+	        	// Scenario 9 - full fuzzyDR: 'hello fuzzy world' : fuzzyDR for entire population.
 	        	System.out.println("... running Scenario 9 fuzzyDR - delta (full fuzzy tree FIS with internal + external + or-else) for agentID:" + this.getAgentID() + ".\n");
-	        	_di = evaluateDelta_i(_energy, _consumptionAbove);
-	        	_de = evaluateDelta_e(_networkState, _actionConsensus);
-	        	_do = evaluateDelta_o(_expectedImpact, _sanctionRisk);
-	        	
-	        	_pObey = evaluateDelta_tree(_di, _de, _do);
+	        	_pObey = complexDeltaParameterEvaluation(_energy, _consumptionAbove, _networkState, _actionConsensus, _expectedImpact, _sanctionRisk);
 	        	break;
 	        default:
 	            System.out.println("Agent " + this.getAgentID() + "Running default fuzzyDR - breaking from switch() loop and defaulting to pObey(1.0) ...");
@@ -606,6 +600,65 @@ public class Agent implements Steppable { //, Stoppable {
     	_remaining = action(state, this.getAgreeemnt_institution(), _resourceLevel);
     	
     	return _remaining;
+    }
+    
+    /**
+     * For Scenarios which run full fuzzyDR on agents, this method returns _pObey as a function of specific deltas in isolation, or all together. subScenario to be specified in Config.
+     * @param energy
+     * @param consumptionAbove
+     * @param networkState
+     * @param actionConsensus
+     * @param expectedImpact
+     * @param sanctionRisk
+     * @return
+     */
+    public double complexDeltaParameterEvaluation(double energy, double consumptionAbove, double networkState, double actionConsensus, double expectedImpact, double sanctionRisk) {
+    	double _di = 0;
+    	double _de = 0;
+    	double _do = 0;
+    	double _dtree = 0;
+    	double _pObey = 1;		// default to full agreement.
+    	
+    	double _energy = energy;
+    	double _consumptionAbove = consumptionAbove;
+    	double _networkState = networkState;
+    	double _actionConsensus = actionConsensus;
+    	double _expectedImpact = expectedImpact;
+    	double _sanctionRisk = sanctionRisk;
+    	
+    	_di = evaluateDelta_i(_energy, _consumptionAbove);
+    	_de = evaluateDelta_e(_networkState, _actionConsensus);
+    	_do = evaluateDelta_o(_expectedImpact, _sanctionRisk);
+    	_dtree = evaluateDelta_tree(_di, _de, _do);
+    	
+    	switch (Config.subScenarioID) {
+    	case 1:
+    		// delta_i only.
+    		_pObey = _di;
+    		DEBUG: System.out.println("... ... running Scenario:" + Config.scenarioID + ", subScenario:" + Config.subScenarioID + " --- (delta_i only):" + _pObey);
+    		break;
+    	case 2:
+    		// delta_e only.
+    		_pObey = _de;
+    		DEBUG: System.out.println("... ... running Scenario:" + Config.scenarioID + ", subScenario:" + Config.subScenarioID + " --- (delta_e only):" + _pObey);
+    		break;
+    	case 3:
+    		// delta_o only.
+    		_pObey = _do;
+    		DEBUG: System.out.println("... ... running Scenario:" + Config.scenarioID + ", subScenario:" + Config.subScenarioID + " --- (delta_o only):" + _pObey);
+    		break;
+    	case 4:
+    		// delta_tree, all delta parameters.
+    		_pObey = _dtree;
+    		DEBUG: System.out.println("... ... running Scenario:" + Config.scenarioID + ", subScenario:" + Config.subScenarioID + " --- (full delta_tree):" + _pObey);
+    		break;
+    	default:
+    		// default to full evaluation.
+    		_pObey = _dtree;
+    		DEBUG: System.out.println("... ... running Scenario:" + Config.scenarioID + ", subScenario:" + Config.subScenarioID + " --- (in DEFAULT - full delta_tree):" + _pObey);
+    		break;
+    	}
+    	return _pObey;
     }
 	
 	public double action(SimState state, double pObey, double resourceLevel) {

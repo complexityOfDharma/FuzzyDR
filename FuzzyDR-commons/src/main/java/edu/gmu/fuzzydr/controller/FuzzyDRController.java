@@ -90,7 +90,7 @@ public class FuzzyDRController extends SimState{
     	
     	// For agent-level logs
     	this.logger = new SimulationLogger("src/main/resources/sim_log_singleRun.csv",
-    	    "Run, Step, AgentID, Energy-Level, Common-Pool-Levels, agent0_delta_i, agent0_delta_e, agent0_delta_o, agent0_agreement");
+    	    "Run,Step,AgentID,Energy-Level,Common-Pool-Levels,agent0_delta_i,agent0_delta_e,agent0_delta_o,agent0_agreement");
 
     	// For population-level statistics
     	this.popLogger = new SimulationLogger("src/main/resources/sim_log_popStats.csv",
@@ -127,11 +127,11 @@ public class FuzzyDRController extends SimState{
     		
     		// For agent-level logs
         	this.logger = new SimulationLogger(logFilename,
-        	    "Run, Step, AgentID, Energy-Level, Common-Pool-Levels, agent0_delta_i, agent0_delta_e, agent0_delta_o, agent0_agreement");
+        	    "Run,Step,AgentID,Energy-Level,Common-Pool-Levels,agent0_delta_i,agent0_delta_e,agent0_delta_o,agent0_agreement");
 
         	// For population-level statistics
         	this.popLogger = new SimulationLogger("src/main/resources/sim_log_popStats.csv",
-        	    "Run, Step, Avg_Energy, Avg_Agreement");
+        	    "Run,Step,Avg_Energy,Avg_Agreement");
     	} else {
     		//this.logger = new SimulationLogger("src/main/resources/sim_log_singleRun.csv");		// single run, agent-level stats.
     		//this.popLogger = new SimulationLogger("src/main/resources/sim_log_popStats.csv");	// single run, population-level stats.

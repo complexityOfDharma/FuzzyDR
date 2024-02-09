@@ -19,11 +19,11 @@ public class Config {
     public static int agentEnergyLossPerStep = 1;
     public final static double consumptionLevel = 1;
     
-    public static int resourceCarryingCapacity = 1333;
+    public static int resourceCarryingCapacity = 1000; //1333;
     public final static double commonsRegrowthRate = 0.3;
     
     // w.r.t. small world network parameters
-    public final static int initNeighbors = 3;
+    public final static int initNeighbors = 5; //3;
     public final static double rewiringProb = 0.05;  //0.8;
     
     // fuzzy logic
@@ -39,7 +39,7 @@ public class Config {
     
     // experiment scenarios
     public static boolean isScenarioRun = true;					// if true, trigger experiment conditions parameterization for selected Scenario. If false, model runs to termination with no Scenario parameterization.
-    public static boolean isExperimentalControlRun = true;		// if true, Control case for Scenario Run, with test agents parameterized for Scenario, but no fuzzyDR Agent's Step(). If false, active fuzzyDR for test agents.
+    public static boolean isExperimentalControlRun = false;		// if true, Control case for Scenario Run, with test agents parameterized for Scenario, but no fuzzyDR Agent's Step(). If false, active fuzzyDR for test agents.
     
     // NOTE: to run custom scenarios, make isFuzzyDRforALL = false, and then specify what scenario experiment you want to test with scenarioID.
     
@@ -51,12 +51,12 @@ public class Config {
     // ('4') - Scenario 4 - delta_e: 'king of the hill'
     // ('5') - Scenario 5 - delta_o:
 	// ('6') - Scenario 6 - delta_o:
-	// ('7') - Scenario 7 - delta_i + delta_e: 
-	// ('8') - Scenario 8 - delta_i + delta_e + delta_o: 
-    // ('9') - Scenario 9 - delta_i + delta_e + delta_o for all agents: 'hello fuzzy world'
+	// ('7') - Scenario 7 - full fuzzyDR: 
+	// ('8') - Scenario 8 - full fuzzyDR: 
+    // ('9') - Scenario 9 - full fuzzyDR for all agents: 'hello fuzzy world'
     // !!! TODO: is there a scenario run exclusively in overlapping regions of membership sets.
-    public static final int scenarioID = 4;			// specify the kind of Agent 0 customization you want to do experiments with.
-    
+    public static final int scenarioID = 2;			// specify the kind of Agent 0 customization you want to do experiments with.
+    public static final int subScenarioID = 1; 		// if running Scenario 7, Scenario 8, or Scenario 9, activate only delta_i (ID=1), only delta_e (ID=2), only delta_o (ID=3), or delta_tree (ID=4).
     
     // batch run parameters
     public static int batchRunID = 0;
