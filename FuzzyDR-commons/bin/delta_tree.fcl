@@ -2,46 +2,46 @@ FUNCTION_BLOCK delta_tree
 
 VAR_INPUT
     delta_i : REAL;
+    	RANGE := (0 .. 1);
     delta_e : REAL;
+    	RANGE := (0 .. 1);
     delta_o : REAL;
+    	RANGE := (0 .. 1);
 END_VAR
 
 VAR_OUTPUT
     p_obey : REAL;
+    	RANGE := (0 .. 1);
 END_VAR
 
 FUZZIFY delta_i
-    TERM low := (0, 1) (3, 1) (5, 0);
-    TERM ok := (3, 0) (5, 1) (7, 0);
-    TERM great := (5, 0) (7, 1) (10, 1);
+    TERM supporting := (0, 0) (1, 1);
+    TERM conflicting := (0, 1) (1, 0);
 END_FUZZIFY
 
 FUZZIFY delta_e
-    TERM low := (0, 0) (3, 1) (5, 0);
-    TERM ok := (3, 0) (5, 1) (7, 0);
-    TERM great := (7, 0) (9, 1) (10, 1);
+    TERM supporting := (0, 0) (1, 1);
+    TERM conflicting := (0, 1) (1, 0);
 END_FUZZIFY
 
 FUZZIFY delta_o
-    TERM low := (0, 1) (3, 1) (5, 0);
-    TERM ok := (3, 0) (5, 1) (7, 0);
-    TERM great := (5, 0) (7, 1) (10, 1);
+    TERM supporting := (0, 0) (1, 1);
+    TERM conflicting := (0, 1) (1, 0);
 END_FUZZIFY
 
 DEFUZZIFY p_obey
-    TERM agree := (0.5, 0) (1, 1);
-    TERM disagree := (0, 1) (0.5, 1);
+    TERM embrace := (0.4, 0) (0.8, 1) (1, 1);
+    TERM reject := (0, 1) (0.2, 1) (0.6, 0);
     METHOD: COG;
 END_DEFUZZIFY
 
 RULEBLOCK No1
-	AND : MIN;	// Use 'min' for 'and'
+	OR : MAX;	// Use 'min' for 'and'
 	ACT : MIN;	// Use 'min' activation method
 	ACCU : MAX;	// Use 'max' accumulation method
 
-	RULE 1: IF delta_i IS low THEN p_obey IS disagree;
-	RULE 2: IF delta_i IS great THEN p_obey IS agree;
-	RULE 3: IF delta_i IS ok THEN p_obey IS agree;
+	RULE 1: IF delta_i IS supporting OR delta_e IS supporting OR delta_o IS supporting THEN p_obey IS embrace;
+	RULE 2: IF delta_i IS conflicting OR delta_e IS conflicting THEN p_obey IS reject;
 
 END_RULEBLOCK
 

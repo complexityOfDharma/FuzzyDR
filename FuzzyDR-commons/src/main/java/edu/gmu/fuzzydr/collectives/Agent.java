@@ -127,7 +127,7 @@ public class Agent implements Steppable { //, Stoppable {
 	     	doFIS_in_expectedImpact = fb_delta_o.getVariable("expectedImpact");
 	     	doFIS_in_sanctionRisk = fb_delta_o.getVariable("sanctionRisk");
 	     	doFIS_out_agreement = fb_delta_o.getVariable("delta_o");
-	        //DEBUG: JFuzzyChart.get().chart(fb_delta_o);
+	        DEBUG: JFuzzyChart.get().chart(fb_delta_o);
 	     	
 	     	// --- load FCL for FIS tree to determine overall p(obey) ---
 	     	String _fclString_dtree = Config.delta_tree_FCLPath;
