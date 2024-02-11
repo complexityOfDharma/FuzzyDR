@@ -127,7 +127,7 @@ public class Agent implements Steppable { //, Stoppable {
 	     	doFIS_in_expectedImpact = fb_delta_o.getVariable("expectedImpact");
 	     	doFIS_in_sanctionRisk = fb_delta_o.getVariable("sanctionRisk");
 	     	doFIS_out_agreement = fb_delta_o.getVariable("delta_o");
-	        DEBUG: JFuzzyChart.get().chart(fb_delta_o);
+	        //DEBUG: JFuzzyChart.get().chart(fb_delta_o);
 	     	
 	     	// --- load FCL for FIS tree to determine overall p(obey) ---
 	     	String _fclString_dtree = Config.delta_tree_FCLPath;
@@ -139,7 +139,7 @@ public class Agent implements Steppable { //, Stoppable {
 	     	dtreeFIS_in_delta_e = fb_delta_tree.getVariable("delta_e");
 	     	dtreeFIS_in_delta_o = fb_delta_tree.getVariable("delta_o");
 	     	dtreeFIS_out_agreement = fb_delta_tree.getVariable("p_obey");
-	        DEBUG: JFuzzyChart.get().chart(fb_delta_tree);
+	        //DEBUG: JFuzzyChart.get().chart(fb_delta_tree);
 	    }
 	}
 	
@@ -355,6 +355,10 @@ public class Agent implements Steppable { //, Stoppable {
 		decrementEnergyLevels(this.energy);
 		//DEBUG: if (this.agentID==0) { System.out.println("... and ending energy is: " + this.getEnergy()); }
 		
+		if (this.getEnergy() <= 0) {
+			this.setEnergy(0); 			// do not let energy level drop below zero, to avoid errors when evaluating fuzzyDR given range for selfEnergy specified in the FCL is [0, 100]. 
+		}
+		
 		// ------- !!! Harvest and update self-state and world-state of common pool. -------
 		double _resourceLevel = fuzzyDR.commons.getResourceLevel();			// resource pool level for current simulation state.
 		double _remaining = _resourceLevel;   								// local variable to track the amount remaining in the common pool after agent's harvest.
@@ -423,8 +427,8 @@ public class Agent implements Steppable { //, Stoppable {
 		if (this.getEnergy() <= 0) {
 			// avoid null pointer exception
 			if (stopper != null) {
-				this.cleanup(state);   // remove references to this agent.
-				stopper.stop();   // take agent off schedule.
+				this.cleanup(state);  	// remove references to this agent.
+				stopper.stop();   		// take agent off schedule.
 			}
 		}
 	}
@@ -532,7 +536,7 @@ public class Agent implements Steppable { //, Stoppable {
      	dtreeFIS_in_delta_o.setValue(delta_o);;
      	fb_delta_tree.evaluate();
      	
-     	dtreeFIS_out_agreement = fb_delta_tree.getVariable("delta_tree");
+     	dtreeFIS_out_agreement = fb_delta_tree.getVariable("p_obey");
     	
     	DEBUG: System.out.println("... delta_tree evaluation is: " + dtreeFIS_out_agreement.getValue() + ".");
     	
@@ -583,17 +587,13 @@ public class Agent implements Steppable { //, Stoppable {
     	double _expectedImpact = 0; 			// logic needs to go here to compute what I mean by expected-impact of sanctions.
     	double _sanctionRisk = 0;				// logic needs to go here to compute what I mean by sanction-risk.
     	
+    	_expectedImpact = fuzzyDR.adico_1.getO_quantity();		// value set to the instantiated sanction impact level for the institution.
+    	//DEBUG: System.out.println("... ... computing delta_o input variables: _expectedImpact=" + _expectedImpact);
+    	_sanctionRisk = Math.min(Math.max(this.consumptionTarget - fuzzyDR.adico_1.getI_quantity(), 0), 10);		// constraining the risk to be on the range [0, 10].
+    	//DEBUG: System.out.println("... ... computing delta_o input variables: _sanctionRisk=" + _sanctionRisk);
     	
     	
-    	
-    	
-    	
-    	
-    	
-    	
-    	
-    	
-    	// !!! --- fuzzyDR scenario specific logic.
+    	// !!! --- fuzzyDR scenario specific logic to determine p(obey) depending on the specific experiment scenario being studied.
     	switch (scenario) {
 	    	case 1:
 	            // Scenario 1 - delta_i: 'maintain status quo' : sufficient energy, compliant with institution, lean toward maintaining 'embrace institution.'
@@ -601,16 +601,15 @@ public class Agent implements Steppable { //, Stoppable {
 	    		
 	    		//DEBUG: System.out.println("running delta_i evaluation using arguments _energy: " + _energy + ", and _consumptionAbove" + _consumptionAbove + ".");
 	        	this.setAgreement_delta_i(evaluateDelta_i(_energy, _consumptionAbove));
-	        	//DEBUG: System.out.println("... running fuzzyDR: AgentID:" + this.getAgentID() + ", and just evaluated delta_i, resulting in an agreement index of: " + _di + ".");
-	        	
+	        	DEBUG: System.out.println("... running fuzzyDR: AgentID:" + this.getAgentID() + ", and just evaluated delta_i, resulting in an agreement index of: " + _di + ".");
 	        	_pObey = this.getAgreement_delta_i();
-	    		break;
+	        	break;
 	        case 2:
 	            // Scenario 2 - delta_i: 'dire straits' : critically low energy levels, compliant with institution, lean toward 'reject institution.'
 	        	System.out.println("... running Scenario 2 fuzzyDR - delta (internal only) for agentID:" + this.getAgentID() + ".\n");
 	        	this.setAgreement_delta_i(evaluateDelta_i(_energy, _consumptionAbove));
 	        	_pObey = this.getAgreement_delta_i();
-	    		break;
+	        	break;
 	        case 3:
 	            // Scenario 3 - delta_e: 'behind the pack' : low energy relative to others, different targets, lean toward 'reject institution.'
 	        	System.out.println("... running Scenario 3 fuzzyDR - delta (external only) for agentID:" + this.getAgentID() + ".\n");
@@ -638,39 +637,45 @@ public class Agent implements Steppable { //, Stoppable {
 	        case 7:
 	            // Scenario 7 - full fuzzyDR for complex scenario 1:
 	        	System.out.println("... running Scenario 7 fuzzyDR - complex scenario 1 - for agentID:" + this.getAgentID() + ".\n");
+	        	// fuzzy evaluation outcomes will be assigned to agreement_institution after this switch block.
 	        	_pObey = complexDeltaParameterEvaluation(_energy, _consumptionAbove, _networkState, _actionConsensus, _expectedImpact, _sanctionRisk);
 	        	break;
 	        case 8:
 	            // Scenario 8 - full fuzzyDR for complex scenario 2: 
 	        	System.out.println("... running Scenario 8 fuzzyDR - complex scenario 2 - for agentID:" + this.getAgentID() + ".\n");
+	        	// fuzzy evaluation outcomes will be assigned to agreement_institution after this switch block.
 	        	_pObey = complexDeltaParameterEvaluation(_energy, _consumptionAbove, _networkState, _actionConsensus, _expectedImpact, _sanctionRisk);
 	        	break;
 	        case 9:
 	            // Scenario 9 - full fuzzyDR for complex scenario 3: 
 	        	System.out.println("... running Scenario 9 fuzzyDR - complex scenario 3 - for agentID:" + this.getAgentID() + ".\n");
+	        	// fuzzy evaluation outcomes will be assigned to agreement_institution after this switch block.
 	        	_pObey = complexDeltaParameterEvaluation(_energy, _consumptionAbove, _networkState, _actionConsensus, _expectedImpact, _sanctionRisk);
 	        	break;
 	        case 10:
 	        	// Scenario 10 - full fuzzyDR: 'hello fuzzy world' : fuzzyDR for entire population.
 	        	System.out.println("... running Scenario 10 fuzzyDR - delta (full fuzzy tree FIS with internal + external + or-else) for agentID:" + this.getAgentID() + ".\n");
+	        	// fuzzy evaluation outcomes will be assigned to agreement_institution after this switch block.
 	        	_pObey = complexDeltaParameterEvaluation(_energy, _consumptionAbove, _networkState, _actionConsensus, _expectedImpact, _sanctionRisk);
 	        	break;
 	        default:
 	            System.out.println("Agent " + this.getAgentID() + "Running default fuzzyDR - breaking from switch() loop and defaulting to pObey(1.0) ...");
 	            // defaults to initialized _pObey value of 1.0, or assumes full agreement with the institution.
-	        	break;
+	            break;
     	}
     	
     	this.setAgreeemnt_institution(_pObey);
     	//DEBUG: System.out.println("... institutional agreement set to p(obey), verifying with: " + this.getAgreeemnt_institution() + ", which should match p(obey).");
     	//DEBUG: System.out.println("... running action() to determine obey or break based on chance roll from the localRNG.");
+    	
+    	// given agreement with institution and p(obey), move to harvest decisions.
     	_remaining = action(state, this.getAgreeemnt_institution(), _resourceLevel);
     	
     	return _remaining;
     }
     
     /**
-     * For Scenarios which run full fuzzyDR on agents, this method returns _pObey as a function of specific deltas in isolation, or all together. subScenario to be specified in Config.
+     * For Scenarios which run full fuzzyDR on agents, this method returns _pObey as a function of specific delta components in isolation, or all together. subScenario to be specified in Config.
      * @param energy
      * @param consumptionAbove
      * @param networkState
@@ -698,31 +703,36 @@ public class Agent implements Steppable { //, Stoppable {
     	_do = evaluateDelta_o(_expectedImpact, _sanctionRisk);
     	_dtree = evaluateDelta_tree(_di, _de, _do);
     	
+    	this.setAgreement_delta_i(_di);
+    	this.setAgreement_delta_e(_de);
+    	this.setAgreement_delta_o(_do);
+    	// set agreement_institution to happen outside this loop.
+    	
     	switch (Config.subScenarioID) {
     	case 1:
     		// delta_i only.
     		_pObey = _di;
-    		DEBUG: System.out.println("... ... running Scenario:" + Config.scenarioID + ", subScenario:" + Config.subScenarioID + " --- (VERIFY this is ok for fuzzyDR evaulation of delta_i only):" + _pObey);
+    		DEBUG: System.out.println("... ... running Scenario:" + Config.scenarioID + ", subScenario:" + Config.subScenarioID + " --- (NOTE: fuzzyDR evaulation of delta_i only):" + _pObey);
     		break;
     	case 2:
     		// delta_e only.
     		_pObey = _de;
-    		DEBUG: System.out.println("... ... running Scenario:" + Config.scenarioID + ", subScenario:" + Config.subScenarioID + " --- (VERIFY this is ok for fuzzyDR evaulation of delta_e only):" + _pObey);
+    		DEBUG: System.out.println("... ... running Scenario:" + Config.scenarioID + ", subScenario:" + Config.subScenarioID + " --- (NOTE: fuzzyDR evaulation of delta_e only):" + _pObey);
     		break;
     	case 3:
     		// delta_o only.
     		_pObey = _do;
-    		DEBUG: System.out.println("... ... running Scenario:" + Config.scenarioID + ", subScenario:" + Config.subScenarioID + " --- (VERIFY this is ok for fuzzyDR evaulation of delta_o only):" + _pObey);
+    		DEBUG: System.out.println("... ... running Scenario:" + Config.scenarioID + ", subScenario:" + Config.subScenarioID + " --- (NOTE: fuzzyDR evaulation of delta_o only):" + _pObey);
     		break;
     	case 4:
     		// delta_tree, all delta parameters.
     		_pObey = _dtree;
-    		DEBUG: System.out.println("... ... running Scenario:" + Config.scenarioID + ", subScenario:" + Config.subScenarioID + " --- (VERIFY this is ok for fuzzyDR evaulation of full delta_tree):" + _pObey);
+    		DEBUG: System.out.println("... ... running Scenario:" + Config.scenarioID + ", subScenario:" + Config.subScenarioID + " --- (NOTE: fuzzyDR evaulation of full delta_tree):" + _pObey);
     		break;
     	default:
     		// default to full evaluation.
     		_pObey = _dtree;
-    		DEBUG: System.out.println("... ... running Scenario:" + Config.scenarioID + ", subScenario:" + Config.subScenarioID + " --- (in DEFAULT - full delta_tree):" + _pObey);
+    		DEBUG: System.out.println("... ... running Scenario:" + Config.scenarioID + ", subScenario:" + Config.subScenarioID + " --- (in DEFAULT switch case - assuming full delta_tree):" + _pObey);
     		break;
     	}
     	return _pObey;

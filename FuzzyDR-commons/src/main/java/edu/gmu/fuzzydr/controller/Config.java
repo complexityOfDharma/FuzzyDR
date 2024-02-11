@@ -56,8 +56,8 @@ public class Config {
     // ('9') - Scenario 9 - full fuzzyDR: 'conflicted tradeoff'
     // ('10') - Scenario 10 - full fuzzyDR for all agents: 'hello fuzzy world'
     // !!! TODO: is there a scenario run exclusively in overlapping regions of membership sets.
-    public static final int scenarioID = 2;			// specify the kind of Agent 0 customization you want to do experiments with.
-    public static final int subScenarioID = 1; 		// if running Scenario 7, Scenario 8, or Scenario 9, activate only delta_i (ID=1), only delta_e (ID=2), only delta_o (ID=3), or delta_tree (ID=4).
+    public static final int scenarioID = 7;			// specify the kind of Agent 0 customization you want to do experiments with.
+    public static final int subScenarioID = 4; 		// if running Scenario 7, Scenario 8, Scenario 9, or Scenario 10, activate only delta_i (ID=1), only delta_e (ID=2), only delta_o (ID=3), or delta_tree (ID=4).
     
     // batch run parameters
     public static int batchRunID = 0;

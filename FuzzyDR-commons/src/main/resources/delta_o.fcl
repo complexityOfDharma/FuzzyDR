@@ -25,7 +25,7 @@ END_FUZZIFY
 DEFUZZIFY delta_o
     TERM embrace := (0.4, 0) (0.8, 1) (1, 1);
     TERM tolerate := trian 0.3 0.5 0.7;
-    TERM ambivalent := trian 0 0.5 1
+    TERM ambivalent := trian 0 0.5 1;
     METHOD: COG;
 END_DEFUZZIFY
 

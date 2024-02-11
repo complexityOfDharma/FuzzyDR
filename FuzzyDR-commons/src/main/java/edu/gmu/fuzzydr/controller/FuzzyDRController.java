@@ -49,7 +49,7 @@ public class FuzzyDRController extends SimState{
 	
 	// TODO: might need a dynamic list of ADICOs... list? Map?
 	//public static ADICO adico_1;  // TODO: move this to Agent class? maybe have each agent own an ADICO, and it get updated after fuzzyDR
-	public static ADICO adico_1;  // TODO: move this to Agent class? maybe have each agent own an ADICO, and it get updated after fuzzyDR
+	public ADICO adico_1;  // TODO: move this to Agent class? maybe have each agent own an ADICO, and it get updated after fuzzyDR
 	
 	// population stats.
 	public int countExpired = 0;    // agents who have expired due to no remaining energy, initialized to no deaths.
