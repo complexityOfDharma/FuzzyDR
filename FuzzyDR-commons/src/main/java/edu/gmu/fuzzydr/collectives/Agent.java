@@ -139,7 +139,7 @@ public class Agent implements Steppable { //, Stoppable {
 	     	dtreeFIS_in_delta_e = fb_delta_tree.getVariable("delta_e");
 	     	dtreeFIS_in_delta_o = fb_delta_tree.getVariable("delta_o");
 	     	dtreeFIS_out_agreement = fb_delta_tree.getVariable("p_obey");
-	        //DEBUG: JFuzzyChart.get().chart(fb_delta_tree);
+	        DEBUG: JFuzzyChart.get().chart(fb_delta_tree);
 	    }
 	}
 	
@@ -147,7 +147,6 @@ public class Agent implements Steppable { //, Stoppable {
 	 * Agent field overrides to meet experiment scenario context and conditions.
 	 */
     private void customizeFuzzyAgentForScenario(int scenario) {
-    	
     	this.setFuzzyDRActivated(true); 	// Assume we activate this for agentID == 0 in all scenarios for simplicity.
     	
     	// ----- scenario specific settings for the fuzzyDR population -----
@@ -189,27 +188,79 @@ public class Agent implements Steppable { //, Stoppable {
         		
                 break;
             case 5:
-                // Scenario 5 - delta_o:
-            	defaultParameterizationForAgents();
-                break;
+                // Scenario 5 - delta_o: 'on the brink' : severe sanction, high risk to incur, lean toward 'embrace institution.'
+            	System.out.println("Loading Scenario 5 ('on the brink') for active fuzzyDR agentID:" + this.getAgentID() + ".\n");
+            	
+            	this.energy = 50;										// initialize a medium energy state, to give room to maintain higher consumption levels.
+            	this.setAgreeemnt_institution(0.9); 					// initialize high agreement. 
+            	
+            	// w.r.t. sanction ...
+            	// !!! Or-else sanction hard-coded to be 'severe' w.r.t. some arbitrary scale (e.g., 90 out of 100), set in FuzzyDRController after ADICO object instantiation.
+            	
+            	// w.r.t. high risk ... setting consumption target to be higher than ADICO, putting agent in a high risk position of being sanctioned.
+            	this.setConsumptionTarget(8);
+            	
+            	break;
             case 6:
-                // Scenario 6 - delta_o:
-            	defaultParameterizationForAgents();
-                break;
+                // Scenario 6 - delta_o: 'safe bet' : moderate sanction, low risk, lean toward 'ambivalent toward institution.'
+            	System.out.println("Loading Scenario 6 ('safe bet') for active fuzzyDR agentID:" + this.getAgentID() + ".\n");
+            	
+            	this.energy = 50;										// initialize a medium energy state, to give room to maintain higher consumption levels.
+            	this.setAgreeemnt_institution(0.9); 					// initialize high agreement. 
+            	
+            	// w.r.t. sanction ...
+            	// !!! Or-else sanction hard-coded to be 'moderate' w.r.t. some arbitrary scale (e.g., 20 out of 100), set in FuzzyDRController after ADICO object instantiation.
+            	
+            	// w.r.t. risk ... setting consumption target to be set to ADICO, putting agent in a negligible risk position of being sanctioned.
+            	this.setConsumptionTarget(Config.consumptionLevel);
+            	
+            	break;
             case 7:
-                // Scenario 7 - delta_i + delta_e: 
-            	// < initialize energy >
-            	// < initialize agreement >
-            	// < initialize consumption target >
-                break;
+                // Scenario 7 - full fuzzyDR all deltas : 'the good life' : moderate sanction, low sanction risk, internal and external support institution, or-else ambivalent, lean toward 'embrace institution.'
+            	System.out.println("Loading Scenario 7 ('the good life') for active fuzzyDR agentID:" + this.getAgentID() + ".\n");
+            	
+            	this.energy = 90;										// initialize a high energy state.
+        		this.setAgreeemnt_institution(0.9);						// initialize a high agreement level that embraces the current institution.
+        		
+        		// w.r.t. sanction ...
+            	// !!! Or-else sanction hard-coded to be 'moderate' w.r.t. some arbitrary scale (e.g., 20 out of 100), set in FuzzyDRController after ADICO object instantiation.
+            	
+            	// w.r.t. risk ... setting consumption target to be set to ADICO, putting agent in a negligible risk position of being sanctioned.
+            	this.setConsumptionTarget(Config.consumptionLevel);		// initialize a consumption target that is aligned to institution prescription.
+        		
+            	break;
             case 8:
-                // Scenario 8 - delta_i + delta_e + delta_o: 
-            	// < initialize energy >
-            	// < initialize agreement >
-            	// < initialize consumption target >
-                break;
+                // Scenario 8 - full fuzzyDR all deltas : 'off-ramp' : moderate sanction, low sanction risk, internal and external reject institution, or-else ambivalent, lean toward 'reject institution.'
+            	System.out.println("Loading Scenario 8 ('off-ramp') for active fuzzyDR agentID:" + this.getAgentID() + ".\n");
+            	
+            	this.energy = 10;										// initialize a critically low energy state.
+            	this.setAgreeemnt_institution(0.9);						// initialize a high agreement level that embraces the current institution.
+            	
+            	// w.r.t. sanction ...
+            	// !!! Or-else sanction hard-coded to be 'moderate' w.r.t. some arbitrary scale (e.g., 20 out of 100), set in FuzzyDRController after ADICO object instantiation.
+            	
+            	// w.r.t. risk ... setting consumption target to be set to ADICO, putting agent in a negligible risk position of being sanctioned.
+            	this.setConsumptionTarget(Config.consumptionLevel);		// initialize a consumption target that is aligned to institution prescription.
+        		
+            	break;
             case 9:
-            	// Scenario 9 - delta_i + delta_e + delta_o: 'hello fuzzy world' : fuzzyDR for all, all delta parameter methods.
+            	// Scenario 9 - full fuzzyDR all deltas : 'conflicted tradeoff' : severe sanction, high sanction risk, internal and external reject institution, or-else supporting institution, lean toward 'embrace institution.'
+            	System.out.println("Loading Scenario 9 ('off-ramp') for active fuzzyDR agentID:" + this.getAgentID() + ".\n");
+            	
+            	this.energy = 10;										// initialize a critically low energy state.
+            	this.setAgreeemnt_institution(0.9);						// initialize a high agreement level that embraces the current institution.
+            	
+            	// w.r.t. sanction ...
+            	// !!! Or-else sanction hard-coded to be 'severe' w.r.t. some arbitrary scale (e.g., 90 out of 100), set in FuzzyDRController after ADICO object instantiation.
+            	
+            	// w.r.t. high risk ... setting consumption target to be higher than ADICO, putting agent in a high risk position of being sanctioned.
+            	this.setConsumptionTarget(5);		// higher than ADICO, but lower than the population.
+            	
+            	break;
+            case 10:
+            	// Scenario 10 - fully fuzzyDR all deltas - ALL AGENTS : 'hello fuzzy world' : initialized for collapse, observe impacts from fuzzyDR.
+            	System.out.println("Loading Scenario 10 ('hello fuzzy world!') for active fuzzyDR agentID:" + this.getAgentID() + ".\n");
+            	
             	
             	break;
             default:
@@ -248,29 +299,32 @@ public class Agent implements Steppable { //, Stoppable {
         		
             	break;
             case 5:
-                // Scenario 5 - delta_o:
+                // Scenario 5 - delta_o: 'on the brink'
             	defaultParameterizationForAgents();
                 break;
             case 6:
-                // Scenario 6 - delta_o:
+                // Scenario 6 - delta_o: 'safe bet'
             	defaultParameterizationForAgents();
                 break;
             case 7:
-                // Scenario 7 - delta_i + delta_e: 
-            	// < insert some other initialization for the non-Fuzzy population for this multi-delta parameter scenario. >
-            	// < initialize energy >
-            	// < initialize agreement >
-            	// < initialize consumption target >
+                // Scenario 7 - fuzzyDR for all: 'the good life'
+            	this.setEnergy(generateGaussian(30, 5, 20, 40));		// set rest of population to be disadvantaged.
+            	this.setAgreeemnt_institution(0.5);		// doesn't matter for this scenario, but for convenience and clarity, set to around middle.
+            	this.setConsumptionTarget(Config.consumptionLevel);		// initialize a consumption target that is aligned to institution prescription.
+            	
             	break;
             case 8:
-                // Scenario 8 - delta_i + delta_e + delta_o: 
-            	// < insert some other initialization for the non-Fuzzy population for this multi-delta parameter scenario. >
-            	// < initialize energy >
-            	// < initialize agreement >
-            	// < initialize consumption target >
+                // Scenario 8 - fuzzyDR for all: 'off-ramp'
+            	this.setEnergy(generateGaussian(90, 5, 80, 100));		// set rest of population to be advantaged.
+            	this.setAgreeemnt_institution(0.5);		// doesn't matter for this scenario, but for convenience and clarity, set to around middle.
+            	this.setConsumptionTarget(generateGaussian(3, 1, 2, 4));	// initialize a consumption target that is meaningfully different than the fuzzyDR agent.
+            	
             	break;
             case 9:
-            	// Scenario 9 - delta_i + delta_e + delta_o: 'hello fuzzy world' : fuzzyDR for all, all delta parameter methods.
+            	// Scenario 9 - fuzzyDR for all: 'conflicted tradeoff'
+            	this.setEnergy(generateGaussian(90, 5, 80, 100));		// set rest of population to be advantaged.
+            	this.setAgreeemnt_institution(0.5);		// doesn't matter for this scenario, but for convenience and clarity, set to around middle.
+            	this.setConsumptionTarget(8);		// higher than ADICO, but also higher than fuzzyDR agent, setting up conditions for an advantaged network..
             	
             	break;
             default:
@@ -531,6 +585,14 @@ public class Agent implements Steppable { //, Stoppable {
     	
     	
     	
+    	
+    	
+    	
+    	
+    	
+    	
+    	
+    	
     	// !!! --- fuzzyDR scenario specific logic.
     	switch (scenario) {
 	    	case 1:
@@ -584,8 +646,13 @@ public class Agent implements Steppable { //, Stoppable {
 	        	_pObey = complexDeltaParameterEvaluation(_energy, _consumptionAbove, _networkState, _actionConsensus, _expectedImpact, _sanctionRisk);
 	        	break;
 	        case 9:
-	        	// Scenario 9 - full fuzzyDR: 'hello fuzzy world' : fuzzyDR for entire population.
-	        	System.out.println("... running Scenario 9 fuzzyDR - delta (full fuzzy tree FIS with internal + external + or-else) for agentID:" + this.getAgentID() + ".\n");
+	            // Scenario 9 - full fuzzyDR for complex scenario 3: 
+	        	System.out.println("... running Scenario 9 fuzzyDR - complex scenario 3 - for agentID:" + this.getAgentID() + ".\n");
+	        	_pObey = complexDeltaParameterEvaluation(_energy, _consumptionAbove, _networkState, _actionConsensus, _expectedImpact, _sanctionRisk);
+	        	break;
+	        case 10:
+	        	// Scenario 10 - full fuzzyDR: 'hello fuzzy world' : fuzzyDR for entire population.
+	        	System.out.println("... running Scenario 10 fuzzyDR - delta (full fuzzy tree FIS with internal + external + or-else) for agentID:" + this.getAgentID() + ".\n");
 	        	_pObey = complexDeltaParameterEvaluation(_energy, _consumptionAbove, _networkState, _actionConsensus, _expectedImpact, _sanctionRisk);
 	        	break;
 	        default:
@@ -635,22 +702,22 @@ public class Agent implements Steppable { //, Stoppable {
     	case 1:
     		// delta_i only.
     		_pObey = _di;
-    		DEBUG: System.out.println("... ... running Scenario:" + Config.scenarioID + ", subScenario:" + Config.subScenarioID + " --- (delta_i only):" + _pObey);
+    		DEBUG: System.out.println("... ... running Scenario:" + Config.scenarioID + ", subScenario:" + Config.subScenarioID + " --- (VERIFY this is ok for fuzzyDR evaulation of delta_i only):" + _pObey);
     		break;
     	case 2:
     		// delta_e only.
     		_pObey = _de;
-    		DEBUG: System.out.println("... ... running Scenario:" + Config.scenarioID + ", subScenario:" + Config.subScenarioID + " --- (delta_e only):" + _pObey);
+    		DEBUG: System.out.println("... ... running Scenario:" + Config.scenarioID + ", subScenario:" + Config.subScenarioID + " --- (VERIFY this is ok for fuzzyDR evaulation of delta_e only):" + _pObey);
     		break;
     	case 3:
     		// delta_o only.
     		_pObey = _do;
-    		DEBUG: System.out.println("... ... running Scenario:" + Config.scenarioID + ", subScenario:" + Config.subScenarioID + " --- (delta_o only):" + _pObey);
+    		DEBUG: System.out.println("... ... running Scenario:" + Config.scenarioID + ", subScenario:" + Config.subScenarioID + " --- (VERIFY this is ok for fuzzyDR evaulation of delta_o only):" + _pObey);
     		break;
     	case 4:
     		// delta_tree, all delta parameters.
     		_pObey = _dtree;
-    		DEBUG: System.out.println("... ... running Scenario:" + Config.scenarioID + ", subScenario:" + Config.subScenarioID + " --- (full delta_tree):" + _pObey);
+    		DEBUG: System.out.println("... ... running Scenario:" + Config.scenarioID + ", subScenario:" + Config.subScenarioID + " --- (VERIFY this is ok for fuzzyDR evaulation of full delta_tree):" + _pObey);
     		break;
     	default:
     		// default to full evaluation.

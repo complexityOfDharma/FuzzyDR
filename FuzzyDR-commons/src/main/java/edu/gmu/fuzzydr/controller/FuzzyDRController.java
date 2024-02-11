@@ -49,7 +49,7 @@ public class FuzzyDRController extends SimState{
 	
 	// TODO: might need a dynamic list of ADICOs... list? Map?
 	//public static ADICO adico_1;  // TODO: move this to Agent class? maybe have each agent own an ADICO, and it get updated after fuzzyDR
-	public ADICO adico_1;  // TODO: move this to Agent class? maybe have each agent own an ADICO, and it get updated after fuzzyDR
+	public static ADICO adico_1;  // TODO: move this to Agent class? maybe have each agent own an ADICO, and it get updated after fuzzyDR
 	
 	// population stats.
 	public int countExpired = 0;    // agents who have expired due to no remaining energy, initialized to no deaths.
@@ -232,11 +232,20 @@ public class FuzzyDRController extends SimState{
     	System.out.println("... instantiation of the commons complete: " + commons.getResourceLevel() + " total energy units.");
     }
     
-    private void instantiateInstitutions() throws IOException {
+    @SuppressWarnings("unused")
+	private void instantiateInstitutions() throws IOException {
     	
     	double _consumptionLevel = Config.consumptionLevel;
     	
     	adico_1 = new ADICO(1, null, null, null, null, _consumptionLevel, null, null, null, 0, null, 0);
+    	
+    	if (Config.scenarioID == 5) { adico_1.setO_quantity(90); }		// Scenario 5: 'on the brink'; severe sanction.
+    	if (Config.scenarioID == 6) { adico_1.setO_quantity(20); }		// Scenario 6: 'safe bet'; moderate sanction.
+    	if (Config.scenarioID == 7) { adico_1.setO_quantity(20); }		// Scenario 7: 'the good life'; moderate sanction.
+    	if (Config.scenarioID == 8) { adico_1.setO_quantity(20); }		// Scenario 8: 'off-ramp'; moderate sanction.
+    	if (Config.scenarioID == 9) { adico_1.setO_quantity(90); }		// Scenario 9: 'conflicted tradeoff'; severe sanction.
+    	
+    	// TODO: for Scenario 10 w/ fuzzyDR for all, do batch runs over a range of ADICO sanctions, e.g., [1 .. 10].
     	
     	// TODO: consider adding each instantiated ADICO statement to a master list to loop over at a later time.
     	

@@ -49,11 +49,12 @@ public class Config {
     // ('2') - Scenario 2 - delta_i: 'dire straits'
     // ('3') - Scenario 3 - delta_e: 'behind the pack'
     // ('4') - Scenario 4 - delta_e: 'king of the hill'
-    // ('5') - Scenario 5 - delta_o:
-	// ('6') - Scenario 6 - delta_o:
-	// ('7') - Scenario 7 - full fuzzyDR: 
-	// ('8') - Scenario 8 - full fuzzyDR: 
-    // ('9') - Scenario 9 - full fuzzyDR for all agents: 'hello fuzzy world'
+    // ('5') - Scenario 5 - delta_o: 'on the brink'
+	// ('6') - Scenario 6 - delta_o: 'safe bet'
+	// ('7') - Scenario 7 - full fuzzyDR: 'the good life'
+	// ('8') - Scenario 8 - full fuzzyDR: 'off-ramp'
+    // ('9') - Scenario 9 - full fuzzyDR: 'conflicted tradeoff'
+    // ('10') - Scenario 10 - full fuzzyDR for all agents: 'hello fuzzy world'
     // !!! TODO: is there a scenario run exclusively in overlapping regions of membership sets.
     public static final int scenarioID = 2;			// specify the kind of Agent 0 customization you want to do experiments with.
     public static final int subScenarioID = 1; 		// if running Scenario 7, Scenario 8, or Scenario 9, activate only delta_i (ID=1), only delta_e (ID=2), only delta_o (ID=3), or delta_tree (ID=4).
@@ -71,5 +72,7 @@ public class Config {
     public static double[] commonsRegrowthRateRange = new double[] { 0.3, 0.3, 0 };			// { start, stop, step size }.
     public static int[] agentEnergyLossPerStepRange = new int[] { 5, 5, 0};					// { start, stop, step size }.
     public static int[] consumptionLevelRange = new int[] { 10, 10, 0 };					// { start, stop, step size }.
+    
+    // TODO: loop over ADICO sanction quantities... !!!
     
 }

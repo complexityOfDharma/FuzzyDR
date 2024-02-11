@@ -69,7 +69,7 @@ public class ADICO {
 		this.C_quantity = c_quantity;			// Conditions: amount.
 		this.C_time = c_time;					// Conditions: e.g., at any time, seasonal.
 		
-		//this.O_field							// sanction field (+ risk, etc) for the FIS.
+		this.O_quantity = o_quantity;			// sanction field (+ risk, etc) for the FIS.
 		
 	}
 	
