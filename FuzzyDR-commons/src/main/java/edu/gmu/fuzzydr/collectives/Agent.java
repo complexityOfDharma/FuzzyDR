@@ -47,6 +47,8 @@ public class Agent implements Steppable { //, Stoppable {
 	private double agreement_delta_o;			// agreement index [0, 1] for delta parameter: or-else.
 	
 	public List<Agent> neighbors = new ArrayList<>();
+	private double avgNetworkEnergy;			// from extended neighbor list, average energy of the set.
+	private double avgNetworkConsumption;		// from extended neighbor list, average consumption target of the set.
 	
 	private boolean isDead = false;
 	
@@ -575,11 +577,15 @@ public class Agent implements Steppable { //, Stoppable {
     	
     	// !!! --- delta external parameters. (NOTE: depends upon neighbor population size > 0, so based on self network, and some random agent still remaining in run)
     	List<Agent> _expandedNeighbors = getExpandedNeighbors(state);		// create extended neighbors list.
-    	double _avgNetworkEnergy = calcAvgEnergyOfExtendedNeighbors(_expandedNeighbors);
-    	double _networkState = _avgNetworkEnergy - this.energy; 			// energy difference between average energy of extended neighbors and this agent's energy.
+    	//double _avgNetworkEnergy = calcAvgEnergyOfExtendedNeighbors(_expandedNeighbors);
+    	this.setAvgNetworkEnergy(calcAvgEnergyOfExtendedNeighbors(_expandedNeighbors));
+    	DEBUG: System.out.println("extended network avg energy is:" + this.getAvgNetworkEnergy());
+    	double _networkState = this.getAvgNetworkEnergy() - this.energy; 			// energy difference between average energy of extended neighbors and this agent's energy.
     	
-    	double _avgNetworkConsumption = calcAvgConsumptionOfExtendedNeighbors(_expandedNeighbors);
-    	double _actionConsensus = Math.abs(_avgNetworkConsumption - this.getConsumptionTarget());		// absolute value difference between self consumption target and the target of the neighbors.
+    	//double _avgNetworkConsumption = calcAvgConsumptionOfExtendedNeighbors(_expandedNeighbors);
+    	this.setAvgNetworkConsumption(calcAvgConsumptionOfExtendedNeighbors(_expandedNeighbors));
+    	DEBUG: System.out.println("extended network avg consumption target is:" + this.getAvgNetworkConsumption());
+    	double _actionConsensus = Math.abs(this.getAvgNetworkConsumption() - this.getConsumptionTarget());		// absolute value difference between self consumption target and the target of the neighbors.
     	//DEBUG: System.out.println("... calculating delta_e input fields: avgNetworkEnergy=" + _avgNetworkEnergy + ", this.energy=" + this.energy + ", _networkState=" + _networkState + ", _avgNetworkConsumption=" + _avgNetworkConsumption + ", this.consumptionTarget=" + this.getConsumptionTarget() + ", _actionConsensus=" + _actionConsensus);
     	
     	
@@ -1005,9 +1011,9 @@ public class Agent implements Steppable { //, Stoppable {
 		
 		//return fuzzyDR.schedule.getSteps() + "," + agentID + "," + e + "," + agreement;
         //return fuzzyDR.schedule.getSteps() + "," + getAgentID() + "," + e + "," + getAgreement();
-		return Config.batchRunID + "," + fuzzyDR.schedule.getSteps() + "," + agentID + "," + e + "," + fuzzyDR.commons.getResourceLevel() +
-				"," + this.getAgreement_delta_i() + "," + this.getAgreement_delta_e() + "," + this.getAgreement_delta_o() + "," + this.getAgreeemnt_institution();
-    }
+		return Config.batchRunID + "," + fuzzyDR.schedule.getSteps() + "," + agentID + "," + e + "," + this.getAvgNetworkEnergy() + "," + this.getAvgNetworkConsumption() + "," + fuzzyDR.commons.getResourceLevel() + "," 
+			+ this.consumptionTarget +"," + this.getAgreement_delta_i() + "," + this.getAgreement_delta_e() + "," + this.getAgreement_delta_o() + "," + this.getAgreeemnt_institution();
+	}
 	
 	
 	/**
@@ -1064,6 +1070,22 @@ public class Agent implements Steppable { //, Stoppable {
 
 	public void setEnergy(double energy) {
 		this.energy = energy;
+	}
+
+	public double getAvgNetworkEnergy() {
+		return avgNetworkEnergy;
+	}
+
+	public void setAvgNetworkEnergy(double avgNetworkEnergy) {
+		this.avgNetworkEnergy = avgNetworkEnergy;
+	}
+
+	public double getAvgNetworkConsumption() {
+		return avgNetworkConsumption;
+	}
+
+	public void setAvgNetworkConsumption(double avgNetworkConsumption) {
+		this.avgNetworkConsumption = avgNetworkConsumption;
 	}
 
 	public double getAgreement() {
