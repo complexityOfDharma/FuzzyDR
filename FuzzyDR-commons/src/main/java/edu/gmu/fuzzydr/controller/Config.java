@@ -45,7 +45,7 @@ public class Config {
     
     // ------- !!! Scenario descriptions. -------
     // ('0') - no scenario - default parameterization
-    // ('1') - Scenario 1 - delta_i: 'maintain status quo'
+    // ('1') - Scenario 1 - delta_i: 'stay the course'
     // ('2') - Scenario 2 - delta_i: 'dire straits'
     // ('3') - Scenario 3 - delta_e: 'behind the pack'
     // ('4') - Scenario 4 - delta_e: 'king of the hill'
@@ -56,7 +56,7 @@ public class Config {
     // ('9') - Scenario 9 - full fuzzyDR: 'conflicted tradeoff'
     // ('10') - Scenario 10 - full fuzzyDR for all agents: 'hello fuzzy world'
     // !!! TODO: is there a scenario run exclusively in overlapping regions of membership sets.
-    public static final int scenarioID = 7;			// specify the kind of Agent 0 customization you want to do experiments with.
+    public static final int scenarioID = 4;			// specify the kind of Agent 0 customization you want to do experiments with.
     public static final int subScenarioID = 4; 		// if running Scenario 7, Scenario 8, Scenario 9, or Scenario 10, activate only delta_i (ID=1), only delta_e (ID=2), only delta_o (ID=3), or delta_tree (ID=4).
     
     // batch run parameters

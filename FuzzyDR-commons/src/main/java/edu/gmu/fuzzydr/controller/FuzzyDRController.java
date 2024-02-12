@@ -217,6 +217,7 @@ public class FuzzyDRController extends SimState{
 	    	//DEBUG: System.out.println("Agent " + a.getAgentID() + " initial agreement level: " + a.getAgreement());
 	    	
 	    	// TODO: set up persona and based on that, assign default agreement.
+    		
     	}
     	
     	System.out.println("... agent instantiation complete: " + masterList_Agents.size() + " agent(s).");

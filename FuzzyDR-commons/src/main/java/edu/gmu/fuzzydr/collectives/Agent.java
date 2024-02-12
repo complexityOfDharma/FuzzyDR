@@ -152,8 +152,8 @@ public class Agent implements Steppable { //, Stoppable {
     	// ----- scenario specific settings for the fuzzyDR population -----
         switch (scenario) {
         	case 1:
-                // Scenario 1 - delta_i: 'maintain status quo' : sufficient energy, compliant with institution, lean toward maintaining 'embrace institution.'
-        		System.out.println("Loading Scenario 1 ('maintain status quo') for active fuzzyDR agentID:" + this.getAgentID() + ".\n");
+                // Scenario 1 - delta_i: 'stay the course' : sufficient energy, compliant with institution, lean toward maintaining 'embrace institution.'
+        		System.out.println("Loading Scenario 1 ('stay the course') for active fuzzyDR agentID:" + this.getAgentID() + ".\n");
         		
         		this.energy = 90;										// initialize a high energy state.
         		this.setAgreeemnt_institution(0.9);						// initialize a high agreement level that embraces the current institution.
@@ -277,7 +277,7 @@ public class Agent implements Steppable { //, Stoppable {
     	// ----- scenario specific settings for non-fuzzyDR population -----
     	switch (scenario) {
         	case 1:
-                // Scenario 1 - delta_i: 'maintain status quo'
+                // Scenario 1 - delta_i: 'stay the course'
         		defaultParameterizationForAgents();
                 break;
             case 2:
