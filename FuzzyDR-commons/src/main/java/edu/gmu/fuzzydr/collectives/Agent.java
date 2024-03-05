@@ -45,6 +45,7 @@ public class Agent implements Steppable { //, Stoppable {
 	private double agreement_delta_i;			// agreement index [0, 1] for delta parameter: internal.
 	private double agreement_delta_e;			// agreement index [0, 1] for delta parameter: external.
 	private double agreement_delta_o;			// agreement index [0, 1] for delta parameter: or-else.
+	private boolean isBreak;					// for given time step, agent is 'breaking with institution' or not.
 	
 	public List<Agent> neighbors = new ArrayList<>();
 	private double avgNetworkEnergy;			// from extended neighbor list, average energy of the set.
@@ -87,12 +88,26 @@ public class Agent implements Steppable { //, Stoppable {
 		// default activation for individualized fuzzyDR.
 		this.setFuzzyDRActivated(false);	// all population default to not-fuzzyDR on individual level. Config fuzzyDR-for-all setting can override for full population fuzzyDR runs.
 		
-		// customize agent(s) based on scenario and fuzzify the appropriate test agents with fuzzyDR parameterization.
-		if ((Config.isScenarioRun) && (this.agentID == 0)) {				// given an experiment scenario run, parameterize Agent Zero for fuzzyDR.
-			customizeFuzzyAgentForScenario(Config.scenarioID);				// this will initialize the target agent with all the scenario parameters, for either a control run or experiment run --- to be routed appropriately in step().
+		// default set to 'obey.'
+		this.setBreak(false);
+		
+		// SCENARIO 10: NEW CODE...
+		if (Config.isFuzzyDRforALL) {
+			//this.setFuzzyDRActivated(true); 
+			customizeFuzzyAgentForScenario(Config.scenarioID);
 		} else {
-			customizeNonFuzzyPopulationForScenario(Config.scenarioID);		// for either control case or configure rest of population to match desired scenario context.
-		}
+			
+		
+			// NON-SCENARIO 10: OLD CODE...
+			// customize agent(s) based on scenario and fuzzify the appropriate test agents with fuzzyDR parameterization.
+			if ((Config.isScenarioRun) && (this.agentID == 0)) {				// given an experiment scenario run, parameterize Agent Zero for fuzzyDR.
+				customizeFuzzyAgentForScenario(Config.scenarioID);				// this will initialize the target agent with all the scenario parameters, for either a control run or experiment run --- to be routed appropriately in step().
+			} else {
+				customizeNonFuzzyPopulationForScenario(Config.scenarioID);		// for either control case or configure rest of population to match desired scenario context.
+			}
+		
+		
+		}  // END SCENARIO 10: NEW CODE ...
 		
 		// ------- !!! Set up Fuzzy Inference System for the agent. -------
 		
@@ -263,7 +278,11 @@ public class Agent implements Steppable { //, Stoppable {
             	// Scenario 10 - fully fuzzyDR all deltas - ALL AGENTS : 'hello fuzzy world' : initialized for collapse, observe impacts from fuzzyDR.
             	System.out.println("Loading Scenario 10 ('hello fuzzy world!') for active fuzzyDR agentID:" + this.getAgentID() + ".\n");
             	
+            	this.setEnergy(generateGaussian(50, 20, 10, 90));
+            	this.setAgreeemnt_institution(generateGaussian(0.75, 0.125, 0.5, 1.0));
+            	this.setConsumptionTarget(Config.consumptionLevel);
             	
+            	DEBUG: System.out.println("... ... energy=" + this.getEnergy() + ", agreement=" + this.getAgreeemnt_institution() + ", target=" + this.getConsumptionTarget() + ".\n");
             	break;
             default:
                 defaultParameterizationForAgents();
@@ -277,6 +296,7 @@ public class Agent implements Steppable { //, Stoppable {
 	 */
     private void customizeNonFuzzyPopulationForScenario(int scenario) {
     	// ----- scenario specific settings for non-fuzzyDR population -----
+    	// note: no switch case for Scenario 10 - since fuzzyDR for all.
     	switch (scenario) {
         	case 1:
                 // Scenario 1 - delta_i: 'stay the course'
@@ -540,7 +560,7 @@ public class Agent implements Steppable { //, Stoppable {
      	
      	dtreeFIS_out_agreement = fb_delta_tree.getVariable("p_obey");
     	
-    	DEBUG: System.out.println("... delta_tree evaluation is: " + dtreeFIS_out_agreement.getValue() + ".");
+    	DEBUG: System.out.println("... delta_tree evaluation is: " + dtreeFIS_out_agreement.getValue() + ".\n");
     	
      	return dtreeFIS_out_agreement.getValue();
     }
@@ -579,12 +599,12 @@ public class Agent implements Steppable { //, Stoppable {
     	List<Agent> _expandedNeighbors = getExpandedNeighbors(state);		// create extended neighbors list.
     	//double _avgNetworkEnergy = calcAvgEnergyOfExtendedNeighbors(_expandedNeighbors);
     	this.setAvgNetworkEnergy(calcAvgEnergyOfExtendedNeighbors(_expandedNeighbors));
-    	DEBUG: System.out.println("extended network avg energy is:" + this.getAvgNetworkEnergy());
+    	//DEBUG: System.out.println("extended network avg energy is:" + this.getAvgNetworkEnergy());
     	double _networkState = this.getAvgNetworkEnergy() - this.energy; 			// energy difference between average energy of extended neighbors and this agent's energy.
     	
     	//double _avgNetworkConsumption = calcAvgConsumptionOfExtendedNeighbors(_expandedNeighbors);
     	this.setAvgNetworkConsumption(calcAvgConsumptionOfExtendedNeighbors(_expandedNeighbors));
-    	DEBUG: System.out.println("extended network avg consumption target is:" + this.getAvgNetworkConsumption());
+    	//DEBUG: System.out.println("extended network avg consumption target is:" + this.getAvgNetworkConsumption());
     	double _actionConsensus = Math.abs(this.getAvgNetworkConsumption() - this.getConsumptionTarget());		// absolute value difference between self consumption target and the target of the neighbors.
     	//DEBUG: System.out.println("... calculating delta_e input fields: avgNetworkEnergy=" + _avgNetworkEnergy + ", this.energy=" + this.energy + ", _networkState=" + _networkState + ", _avgNetworkConsumption=" + _avgNetworkConsumption + ", this.consumptionTarget=" + this.getConsumptionTarget() + ", _actionConsensus=" + _actionConsensus);
     	
@@ -607,7 +627,7 @@ public class Agent implements Steppable { //, Stoppable {
 	    		
 	    		//DEBUG: System.out.println("running delta_i evaluation using arguments _energy: " + _energy + ", and _consumptionAbove" + _consumptionAbove + ".");
 	        	this.setAgreement_delta_i(evaluateDelta_i(_energy, _consumptionAbove));
-	        	DEBUG: System.out.println("... running fuzzyDR: AgentID:" + this.getAgentID() + ", and just evaluated delta_i, resulting in an agreement index of: " + _di + ".");
+	        	//DEBUG: System.out.println("... running fuzzyDR: AgentID:" + this.getAgentID() + ", and just evaluated delta_i, resulting in an agreement index of: " + _di + ".");
 	        	_pObey = this.getAgreement_delta_i();
 	        	break;
 	        case 2:
@@ -660,7 +680,7 @@ public class Agent implements Steppable { //, Stoppable {
 	        	break;
 	        case 10:
 	        	// Scenario 10 - full fuzzyDR: 'hello fuzzy world' : fuzzyDR for entire population.
-	        	System.out.println("... running Scenario 10 fuzzyDR - delta (full fuzzy tree FIS with internal + external + or-else) for agentID:" + this.getAgentID() + ".\n");
+	        	System.out.println("\n... running Scenario 10 fuzzyDR - delta (full fuzzy tree FIS with internal + external + or-else) for agentID:" + this.getAgentID() + ".\n");
 	        	// fuzzy evaluation outcomes will be assigned to agreement_institution after this switch block.
 	        	_pObey = complexDeltaParameterEvaluation(_energy, _consumptionAbove, _networkState, _actionConsensus, _expectedImpact, _sanctionRisk);
 	        	break;
@@ -718,27 +738,27 @@ public class Agent implements Steppable { //, Stoppable {
     	case 1:
     		// delta_i only.
     		_pObey = _di;
-    		DEBUG: System.out.println("... ... running Scenario:" + Config.scenarioID + ", subScenario:" + Config.subScenarioID + " --- (NOTE: fuzzyDR evaulation of delta_i only):" + _pObey);
+    		//!!DEBUG: System.out.println("... ... running Scenario:" + Config.scenarioID + ", subScenario:" + Config.subScenarioID + " --- (NOTE: fuzzyDR evaulation of delta_i only):" + _pObey);
     		break;
     	case 2:
     		// delta_e only.
     		_pObey = _de;
-    		DEBUG: System.out.println("... ... running Scenario:" + Config.scenarioID + ", subScenario:" + Config.subScenarioID + " --- (NOTE: fuzzyDR evaulation of delta_e only):" + _pObey);
+    		//!!DEBUG: System.out.println("... ... running Scenario:" + Config.scenarioID + ", subScenario:" + Config.subScenarioID + " --- (NOTE: fuzzyDR evaulation of delta_e only):" + _pObey);
     		break;
     	case 3:
     		// delta_o only.
     		_pObey = _do;
-    		DEBUG: System.out.println("... ... running Scenario:" + Config.scenarioID + ", subScenario:" + Config.subScenarioID + " --- (NOTE: fuzzyDR evaulation of delta_o only):" + _pObey);
+    		//!!DEBUG: System.out.println("... ... running Scenario:" + Config.scenarioID + ", subScenario:" + Config.subScenarioID + " --- (NOTE: fuzzyDR evaulation of delta_o only):" + _pObey);
     		break;
     	case 4:
     		// delta_tree, all delta parameters.
     		_pObey = _dtree;
-    		DEBUG: System.out.println("... ... running Scenario:" + Config.scenarioID + ", subScenario:" + Config.subScenarioID + " --- (NOTE: fuzzyDR evaulation of full delta_tree):" + _pObey);
+    		//!!DEBUG: System.out.println("... ... running Scenario:" + Config.scenarioID + ", subScenario:" + Config.subScenarioID + " --- (NOTE: fuzzyDR evaulation of full delta_tree):" + _pObey);
     		break;
     	default:
     		// default to full evaluation.
     		_pObey = _dtree;
-    		DEBUG: System.out.println("... ... running Scenario:" + Config.scenarioID + ", subScenario:" + Config.subScenarioID + " --- (in DEFAULT switch case - assuming full delta_tree):" + _pObey);
+    		//!!DEBUG: System.out.println("... ... running Scenario:" + Config.scenarioID + ", subScenario:" + Config.subScenarioID + " --- (in DEFAULT switch case - assuming full delta_tree):" + _pObey);
     		break;
     	}
     	return _pObey;
@@ -752,18 +772,18 @@ public class Agent implements Steppable { //, Stoppable {
 		
 		if (_chance < pObey) {
 			// obey.
-			
+			this.setBreak(false);
 			// reset the consumption target to the institution.
 			this.setConsumptionTarget(fuzzyDR.adico_1.getI_quantity());
 			//DEBUG: System.out.println("... ... pObey() is: " + pObey);
 			_remaining = harvest(resourceLevel, this.energy, this.consumptionTarget);		// maintain current action policy for consumption levels.
-			DEBUG: System.out.println("... running fuzzyDR: AgentID:" + this.getAgentID() + ", p(obey): " + this.getAgreeemnt_institution() + ", chance: " + _chance + ", agent will 'OBEY' --- maintain consumption: " + this.getConsumptionTarget() + ".");
+			DEBUG: System.out.println("... running fuzzyDR: AgentID:" + this.getAgentID() + ", p(obey): " + this.getAgreeemnt_institution() + ", chance: " + _chance + ", agent will 'OBEY' --- maintain consumption: " + this.getConsumptionTarget() + ".\n");
 		} else {
 			// break.
-			
+			this.setBreak(true);
 			innovateNewAction();		// determine a new consumption target and update the agent's consumption target field.
 			_remaining = harvest(resourceLevel, this.energy, this.getConsumptionTarget());			// innovate new action policy for consumption levels.
-			DEBUG: System.out.println("... running fuzzyDR: AgentID:" + this.getAgentID() + ", p(obey): " + this.getAgreeemnt_institution() + ", chance: " + _chance + ", agent will 'BREAK' --- innovated new action --- new consumption: " + this.getConsumptionTarget() + ".");
+			DEBUG: System.out.println("... running fuzzyDR: AgentID:" + this.getAgentID() + ", p(obey): " + this.getAgreeemnt_institution() + ", chance: " + _chance + ", agent will 'BREAK' --- innovated new action --- new consumption: " + this.getConsumptionTarget() + ".\n");
 		}
 		return _remaining;
 	}
@@ -957,6 +977,8 @@ public class Agent implements Steppable { //, Stoppable {
 		
 		this.setDead(true);
 		
+		DEBUG: System.out.println("... >>> agent terminated, removing agent:" + this.agentID + " from the simulation.\n");
+		
 		// Set any object references to null (e.g., myObject = null;)
 		// remove the agent from the HashMap of active agents (still alive).
 		FuzzyDRController.masterMap_ActiveAgents.remove(this.agentID);
@@ -1126,6 +1148,14 @@ public class Agent implements Steppable { //, Stoppable {
 
 	public void setAgreement_delta_o(double agreement_delta_o) {
 		this.agreement_delta_o = agreement_delta_o;
+	}
+
+	public boolean isBreak() {
+		return isBreak;
+	}
+
+	public void setBreak(boolean isBreak) {
+		this.isBreak = isBreak;
 	}
 
 	public double getConsumptionTarget() {

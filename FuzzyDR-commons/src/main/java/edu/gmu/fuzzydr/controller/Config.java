@@ -28,7 +28,7 @@ public class Config {
     
     // fuzzy logic
     
-    public static boolean isFuzzyDRforALL = false;										// if fuzzy inference is active or not for model runs.
+    public static boolean isFuzzyDRforALL = true;										// if fuzzy inference is active or not for model runs.
     
     // TODO: these FCLs may be customized to personas, e.g., 'Conformist_delta_i.fcl,' 'Skeptic_delta_i.fcl'
     public static final String genericAgentFCLPath = "/generic_agent.fcl"; 			// specified with leading '/' for path absolute relative to the classpath root.
@@ -56,7 +56,7 @@ public class Config {
     // ('9') - Scenario 9 - full fuzzyDR: 'conflicted tradeoff'
     // ('10') - Scenario 10 - full fuzzyDR for all agents: 'hello fuzzy world'
     // !!! TODO: is there a scenario run exclusively in overlapping regions of membership sets.
-    public static final int scenarioID = 1;			// specify the kind of Agent 0 customization you want to do experiments with.
+    public static final int scenarioID = 10;			// specify the kind of Agent 0 customization you want to do experiments with.
     public static final int subScenarioID = 4; 		// if running Scenario 7, Scenario 8, Scenario 9, or Scenario 10, activate only delta_i (ID=1), only delta_e (ID=2), only delta_o (ID=3), or delta_tree (ID=4).
     
     // batch run parameters

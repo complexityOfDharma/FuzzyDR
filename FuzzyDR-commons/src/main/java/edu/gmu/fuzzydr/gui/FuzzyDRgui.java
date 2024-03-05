@@ -8,6 +8,9 @@ import java.awt.geom.Line2D;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.XYPlot;
+
 import java.io.IOException;
 
 import edu.gmu.fuzzydr.collectives.Agent;
@@ -100,6 +103,10 @@ public class FuzzyDRgui extends GUIState {
 		resourcePoolChart.setXAxisLabel("Step");
 		resourcePoolChart.setVisible(true);
 		
+		JFreeChart resourceChart = resourcePoolChart.getChart();
+		XYPlot _poolPlot = resourceChart.getXYPlot();
+		_poolPlot.getRangeAxis().setUpperBound(1000);
+		
 		JFrame pool_frame = resourcePoolChart.createFrame();
 		c.registerFrame(pool_frame);
 		
@@ -109,6 +116,10 @@ public class FuzzyDRgui extends GUIState {
 		agreementHistogram.setXAxisLabel("Agreement");
 		agreementHistogram.setYAxisLabel("Frequency");
 		agreementHistogram.setVisible(true);
+		
+		JFreeChart agreementChart = agreementHistogram.getChart();
+		XYPlot _agreePlot = (XYPlot) agreementChart.getPlot();
+		_agreePlot.getDomainAxis().setRange(0.4, 0.75);
 		
 		JFrame agreement_frame = agreementHistogram.createFrame();
 		c.registerFrame(agreement_frame);
@@ -159,14 +170,14 @@ public class FuzzyDRgui extends GUIState {
 					public void draw(Object object, Graphics2D graphics, DrawInfo2D info) {
 						Agent agent = (Agent) object;
 						
-						if (agent.getAgreement() > 0.3) {
+						if (!agent.isBreak()) {
 							// toward agree with institution.
 							paint = Color.BLUE;
 			                scale = 10;
 							
 						} else {
 							// toward disagree with institution.
-							paint = Color.MAGENTA;
+							paint = new Color(255, 140, 0);
 			                scale = 10;
 							
 						}
