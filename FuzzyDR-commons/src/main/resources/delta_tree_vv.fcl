@@ -1,0 +1,53 @@
+FUNCTION_BLOCK delta_tree_vv
+
+VAR_INPUT
+    delta_i_out : REAL;
+    	RANGE := (0 .. 1);
+    delta_e_out : REAL;
+    	RANGE := (0 .. 1);
+    delta_o_out : REAL;
+    	RANGE := (0 .. 1);
+END_VAR
+
+VAR_OUTPUT
+    delta_tree_out : REAL;
+    	RANGE := (0 .. 1);
+END_VAR
+
+FUZZIFY delta_i_out
+    TERM left := trian 0 0.165 0.33;  // Ends right at the beginning of the middle term
+    TERM middle := trian 0.33 0.5 0.67;  // Starts and ends exactly between left and right
+    TERM right := trian 0.67 0.835 1;  // Starts right at the end of the middle term
+END_FUZZIFY
+
+FUZZIFY delta_e_out
+    TERM left := trian 0 0.165 0.33;  // Ends right at the beginning of the middle term
+    TERM middle := trian 0.33 0.5 0.67;  // Starts and ends exactly between left and right
+    TERM right := trian 0.67 0.835 1;  // Starts right at the end of the middle term
+END_FUZZIFY
+
+FUZZIFY delta_o_out
+    TERM left := trian 0 0.165 0.33;  // Ends right at the beginning of the middle term
+    TERM middle := trian 0.33 0.5 0.67;  // Starts and ends exactly between left and right
+    TERM right := trian 0.67 0.835 1;  // Starts right at the end of the middle term
+END_FUZZIFY
+
+DEFUZZIFY delta_tree_out
+    TERM left := trian 0 0.165 0.33;  // Ends right at the beginning of the middle term
+    TERM middle := trian 0.33 0.5 0.67;  // Starts and ends exactly between left and right
+    TERM right := trian 0.67 0.835 1;  // Starts right at the end of the middle term
+    METHOD: COG;
+END_DEFUZZIFY
+
+RULEBLOCK No1
+	OR : MAX;	// Use 'min' for 'and'
+	ACT : MIN;	// Use 'min' activation method
+	ACCU : MAX;	// Use 'max' accumulation method
+
+	RULE 1: IF delta_i_out IS left OR delta_e_out IS left OR delta_o_out IS left THEN delta_tree_out IS left;
+    RULE 2: IF delta_i_out IS middle OR delta_e_out IS middle OR delta_o_out IS middle THEN delta_tree_out IS middle;
+    RULE 3: IF delta_i_out IS right OR delta_e_out IS right OR delta_o_out IS right THEN delta_tree_out IS right;
+
+END_RULEBLOCK
+
+END_FUNCTION_BLOCK

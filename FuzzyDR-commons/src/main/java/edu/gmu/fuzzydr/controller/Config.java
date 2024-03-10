@@ -36,6 +36,11 @@ public class Config {
     public static final String delta_e_FCLPath = "/delta_e.fcl";   					// specified with leading '/' for path absolute relative to the classpath root.
     public static final String delta_o_FCLPath = "/delta_o.fcl";   					// specified with leading '/' for path absolute relative to the classpath root.
     public static final String delta_tree_FCLPath = "/delta_tree.fcl";   			// specified with leading '/' for path absolute relative to the classpath root.
+    public static final String delta_i_vv_FCLPath = "/delta_i_vv.fcl";   					// specified with leading '/' for path absolute relative to the classpath root.
+    public static final String delta_e_vv_FCLPath = "/delta_e_vv.fcl";   					// specified with leading '/' for path absolute relative to the classpath root.
+    public static final String delta_o_vv_FCLPath = "/delta_o_vv.fcl";   					// specified with leading '/' for path absolute relative to the classpath root.
+    public static final String delta_tree_vv_FCLPath = "/delta_tree_vv.fcl";   			// specified with leading '/' for path absolute relative to the classpath root.
+    
     
     // experiment scenarios
     public static boolean isScenarioRun = true;					// if true, trigger experiment conditions parameterization for selected Scenario. If false, model runs to termination with no Scenario parameterization.

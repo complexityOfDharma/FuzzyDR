@@ -1,1 +1,11 @@
 /edu/
+/sim_log_popStats.csv
+/sim_log_singleRun.csv
+/delta_lvl0.fcl
+/delta_internal.fcl
+/delta_external.fcl
+/delta_orElse.fcl
+/delta_e_vv.fcl
+/delta_i_vv.fcl
+/delta_o_vv.fcl
+/delta_tree_vv.fcl
